@@ -1,0 +1,31 @@
+{
+  "name": "Claylump",
+  "version": "0.0.1",
+  "description": "Web Components wrapper with Virtual DOM",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahomu/Claylump"
+  },
+  "author": "ahomu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ahomu/Claylump/issues"
+  },
+  "homepage": "https://github.com/ahomu/Claylump",
+  "dependencies": {
+    "htmlparser": "^1.7.7",
+    "virtual-dom": "0.0.20"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-browserify": "~3.0.1",
+    "grunt-contrib-watch": "~0.6.1"
+  }
+}
