@@ -93,7 +93,7 @@ helper.mix(ClayTemplate.prototype, {
   /**
    * @returns {VTree}
    */
-  computeVtree: function() {
+  createVTree: function() {
     console.time('convert vtree');
     var ret = this.currentVTree = this.convertParsedDomToVTree(this.struct);
     console.timeEnd('convert vtree');
@@ -102,12 +102,11 @@ helper.mix(ClayTemplate.prototype, {
   /**
    */
   createElement: function(doc) {
-    return create(this.computeVtree(), {
+    return create(this.createVTree(), {
       document: doc
     });
   },
   /**
-   *
    * @property {Boolean} _invalidated
    */
   _invalidated: false,
