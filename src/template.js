@@ -108,6 +108,7 @@ helper.mix(ClayTemplate.prototype, {
   },
   /**
    *
+   * @property {Boolean} _invalidated
    */
   _invalidated: false,
   /**
@@ -134,6 +135,10 @@ helper.mix(ClayTemplate.prototype, {
 
     this._invalidated = false;
   },
+  /**
+   *
+   * @param {Element} targetRoot
+   */
   drawLoop: function(targetRoot) {
     var patchDOM = function() {
       if (this.diffQueue) {
@@ -187,7 +192,7 @@ helper.mix(ClayTemplate.prototype, {
             attributes : attrs,
             style      : style
           },
-          children.map(this.convertParsedDomToVTree, this)
+          children.map(this.convertParsedDomToVTree, this).filter(function(v) { return !!v; })
         );
         break;
 
@@ -198,7 +203,7 @@ helper.mix(ClayTemplate.prototype, {
 
       case 'comment':
         // TODO create comment node?
-        return {key: undefined};
+        return null;
         break;
     }
   }
@@ -243,7 +248,7 @@ function convertCssStringToObject(cssStr) {
       retStyle   = {},
       i = 0, prop_value;
 
-  while (prop_value = cssStrings[i++]) {
+  while ((prop_value = cssStrings[i++])) {
     prop_value = prop_value.split(':');
     retStyle[prop_value[0]] = prop_value[1];
   }
