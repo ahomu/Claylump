@@ -75,6 +75,7 @@ helper.mix(ClayTemplate.prototype, {
    */
   init: function() {
     this.parseHtml();
+    this.observeScope()
   },
   /**
    *
@@ -90,6 +91,69 @@ helper.mix(ClayTemplate.prototype, {
 
     return this.struct = this.handler.dom[0];
   },
+  /**
+   * @property {Object} rootObserveTarget
+   */
+  rootObserveTarget: {},
+  /**
+   *
+   */
+  observeScope: function() {
+    // TODO refactor
+    var matches = this.tmpl.match(REX_INTERPOLATE),
+        uniq = {}, i = 0, symbol;
+
+    // unique list
+    while ((symbol = matches[i++])) {
+      symbol = symbol.slice(2, -2); // '{{foo.bar}}' -> 'foo.bar'
+      if (!uniq[symbol]) {
+        uniq[symbol] = true;
+      }
+    }
+
+    // interpolate path
+    Object.keys(uniq).map(function(symbolPath) {
+      var host     = this.scope,
+          tokens   = symbolPath.split('.'),
+          observer = this.invalidate.bind(this);
+
+      if (tokens.length > 1) {
+        // observe host object
+
+        // remove target property name;
+        tokens.splice(-1);
+
+        // fill object
+        var i = 0, token;
+        while ((token = tokens[i++])) {
+          host[token] || (host[token] = {});
+          host = host[token];
+        }
+
+        // avoid duplicate observe
+        if (!host.__observed) {
+          host.__observed = true;
+          Object.observe(host, observer);
+        }
+      } else {
+        // register root target prop
+        this.rootObserveTarget[tokens[0]] = true;
+      }
+    }.bind(this));
+
+    // observe root scope
+    Object.observe(this.scope, function(changes) {
+      var i = 0, prop;
+      while ((prop = changes[i++])) {
+        if (this.rootObserveTarget[prop.name]) {
+          this.invalidate();
+          break;
+        }
+
+      }
+    }.bind(this));
+  },
+
   /**
    * @returns {VTree}
    */
