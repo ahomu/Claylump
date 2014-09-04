@@ -1,0 +1,17 @@
+{
+  "framework": "mocha",
+  "before_tests": "grunt pretest",
+  "on_exit": "rm -rf ./test/temp",
+  "src_files": [
+    "./dist/claylump.js",
+    "./test/*.coffee"
+  ],
+  "serve_files": [
+    "//cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js",
+    "./bower_components/power-assert/build/power-assert.js",
+    "./dist/claylump.js",
+    "./test/temp/*.js"
+  ],
+  "launch_in_dev": ["PhantomJS", "Chrome"],
+  "launch_in_ci": ["PhantomJS"]
+}

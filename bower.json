@@ -1,0 +1,19 @@
+{
+  "name": "Claylump",
+  "main": "dist/claylump.js",
+  "homepage": "https://github.com/ahomu/Claylump",
+  "authors": [
+    "ahomu <mail@ayumusato.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "src",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "power-assert": "~0.9.0"
+  }
+}

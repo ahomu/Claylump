@@ -1,2 +1,5 @@
+coverage
+bower_components
 node_modules
 memo.md
+test/temp

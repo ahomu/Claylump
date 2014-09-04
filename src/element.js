@@ -59,14 +59,18 @@ module.exports = {
     });
 
     // mix claylump implementation
-    helper.mix(proto, ClayMethods);
+    helper.mix(proto, ClayElement.prototype);
 
     // TODO extends element
     return helper.mix(Object.create(HTMLElement.prototype), proto);
   }
 };
 
-var ClayMethods = {
+function ClayElement() {
+  // don't call directly
+}
+
+helper.mix(ClayElement.prototype, {
   /**
    *
    */
@@ -111,4 +115,4 @@ var ClayMethods = {
   attributeChangedCallback : function() {
     this._attrChanged();
   }
-};
+});

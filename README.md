@@ -66,3 +66,4 @@ Javaの世界から帰ってきたのでリハビリ中
 - expression support
 - event delegation
 - es6promise?
+- platform.js
