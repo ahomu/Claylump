@@ -103,6 +103,10 @@ helper.mix(ClayTemplate.prototype, {
     var matches = this.tmpl.match(REX_INTERPOLATE),
         uniq = {}, i = 0, symbol;
 
+    if (matches === null) {
+      return;
+    }
+
     // unique list
     while ((symbol = matches[i++])) {
       symbol = symbol.slice(2, -2); // '{{foo.bar}}' -> 'foo.bar'
@@ -230,24 +234,24 @@ helper.mix(ClayTemplate.prototype, {
     var tag      = dom.name,
         type     = dom.type,
         data     = dom.data,
-        attrs    = dom.attribs || {},
+        orgAttrs = dom.attribs || {},
         children = dom.children || [],
+        attrs    = {},
         style    = {},
         keys, key, i = 0;
 
     switch(type) {
       case 'tag':
         // styles
-        if (attrs.style) {
-          style = applyInterpolateValues(data, this.scope);
+        if (orgAttrs.style) {
+          style = applyInterpolateValues(orgAttrs.style, this.scope);
           style = convertCssStringToObject(style);
-          delete attrs.style;
         }
 
         // attributes
-        keys = Object.keys(attrs);
+        keys = Object.keys(orgAttrs);
         while ((key = keys[i++])) {
-          attrs[key] = applyInterpolateValues(attrs[key], this.scope);
+          attrs[key] = applyInterpolateValues(orgAttrs[key], this.scope);
         }
 
         // create vtree
