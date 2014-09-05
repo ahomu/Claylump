@@ -67,3 +67,6 @@ Javaの世界から帰ってきたのでリハビリ中
 - event delegation
 - es6promise?
 - platform.js
+
+#restrict
+- cannot use inherit element like `is="x-child"` in `<template>`

@@ -3,13 +3,14 @@
 /**
  * @param {Object} to
  * @param {Object} from
+ * @param {Boolean} [overwrite]
  * @return {Object}
  */
-function mix(to, from, force) {
+function mix(to, from, overwrite) {
   var i = 0, ary = Object.keys(from), iz = ary.length, prop;
   for (; i<iz; i++) {
     prop = ary[i];
-    if (force || !to[prop]) {
+    if (overwrite || !to[prop]) {
       to[prop] = from[prop];
     }
   }
@@ -21,6 +22,14 @@ function mix(to, from, force) {
  */
 function isFunction(value) {
   return typeof value === 'function';
+}
+
+/**
+ * @param {String} localName
+ * @returns {boolean}
+ */
+function isCustomElementName(localName) {
+  return localName.indexOf('-') !== -1;
 }
 
 /**
@@ -62,7 +71,7 @@ module.exports = {
   mix       : mix,
   clone     : clone,
   ready     : ready,
-  is        : {
-    func : isFunction
-  }
+
+  isFunction          : isFunction,
+  isCustomElementName : isCustomElementName
 };

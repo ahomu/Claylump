@@ -3,12 +3,15 @@
 var helper   = require('./helper');
 var template = require('./template');
 
+/**
+ * @class ClayElement
+ */
 module.exports = {
   /**
-   *
+   * @static
    * @param {String} name
    * @param {Object} proto
-   * @returns {Object}
+   * @returns {ClayElement}
    */
   create: function(name, proto) {
 
@@ -23,26 +26,26 @@ module.exports = {
        * @private
        * @method {Function} _created
        */
-      _created: helper.is.func(proto.createdCallback) ? proto.createdCallback
-                                                      : helper.noop,
+      _created: helper.isFunction(proto.createdCallback) ? proto.createdCallback
+                                                         : helper.noop,
       /**
        * @private
        * @method {Function} _attached
        */
-      _attached: helper.is.func(proto.attachedCallback) ? proto.attachedCallback
-                                                        : helper.noop,
+      _attached: helper.isFunction(proto.attachedCallback) ? proto.attachedCallback
+                                                           : helper.noop,
       /**
        * @private
        * @method {Function} _detached
        */
-      _detached: helper.is.func(proto.detachedCallback) ? proto.detachedCallback
-                                                        : helper.noop,
+      _detached: helper.isFunction(proto.detachedCallback) ? proto.detachedCallback
+                                                           : helper.noop,
       /**
        * @private
        * @method {Function} _attrChanged
        */
-      _attrChanged: helper.is.func(proto.attributeChangedCallback) ? proto.attributeChangedCallback
-                                                                   : helper.noop,
+      _attrChanged: helper.isFunction(proto.attributeChangedCallback) ? proto.attributeChangedCallback
+                                                                      : helper.noop,
       /**
        * @private
        * @property {String} _html
@@ -77,8 +80,7 @@ module.exports = {
     });
 
     // mix claylump implementation
-    helper.mix(proto, defaults);
-    helper.mix(proto, ClayElement.prototype, true);
+    helper.mix(helper.mix(proto, defaults), ClayElement.prototype, true);
 
     // dom ready required
     helper.ready(function() {
@@ -86,9 +88,24 @@ module.exports = {
       proto._html  = template.innerHTML;
     });
 
+    // extends element
+    var superProto;
+    if (proto.extends) {
+      // FIXME cannot use `is="x-child"` in `<template>`
+      superProto = Object.create(proto._doc.createElement(proto.extends).constructor).prototype;
 
-    // TODO extends element
-    return helper.mix(Object.create(HTMLElement.prototype), proto);
+      if (helper.isCustomElementName(proto.extends)) {
+        // extends custom element
+        proto      = helper.mix(helper.mix({}, superProto), proto, true);
+        superProto = HTMLElement.prototype;
+      }
+
+    } else {
+      // new custom element
+      superProto = HTMLElement.prototype;
+    }
+
+    return helper.mix(Object.create(superProto), proto);
   }
 };
 
@@ -111,6 +128,7 @@ helper.mix(ClayElement.prototype, {
     }
     delete this.use;
   },
+
   /**
    * @private
    */
@@ -120,6 +138,7 @@ helper.mix(ClayElement.prototype, {
       this[key] = helper.clone(this[key]);
     }
   },
+
   /**
    *
    */

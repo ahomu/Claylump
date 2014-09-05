@@ -11,8 +11,15 @@ var REX_INTERPOLATE  = /\{\{[^{}]*}}/g;
 var REX_ESCAPE_START = /{{/g;
 var REX_ESCAPE_END   = /}}/g;
 
+var STR_ESCAPE_REPLACEMENT_START = '\\{\\{';
+var STR_ESCAPE_REPLACEMENT_END   = '\\}\\}';
+
+/**
+ * @class ClayTemplate
+ */
 module.exports = {
   /**
+   * @static
    * @param {String} html
    * @param {Object} scope
    * @returns {ClayTemplate}
@@ -296,7 +303,8 @@ function applyInterpolateValues(str, obj) {
 }
 
 function escapeInterpolateSymbol(text) {
-  return text.replace(REX_ESCAPE_START, '\\{\\{').replace(REX_ESCAPE_END, '\\}\\}');
+  return text.replace(REX_ESCAPE_START, STR_ESCAPE_REPLACEMENT_START)
+             .replace(REX_ESCAPE_END,   STR_ESCAPE_REPLACEMENT_END);
 }
 
 // TODO add cache map?

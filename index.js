@@ -4,7 +4,11 @@ var ClayRegister = require('./src/register');
 var helper       = require('./src/helper');
 
 window.Claylump = helper.mix(ClayRegister, {
-  factory: {
-    http: require('./src/factory/http')
+
+  Template: require('./src/template'),
+  Element : require('./src/element'),
+
+  module : {
+    http: require('./src/modules/http')
   }
 });

@@ -13,7 +13,7 @@ module.exports = function(config) {
     colors: false,
     logLevel: config.LOG_INFO,
     autoWatch: false,
-    browsers: ['PhantomJS', 'Chrome'],
+    browsers: ['Chrome'],
     preprocessors: {
       'test/*.coffee' : 'coffee',
       'src/*.js'      : 'coverage'
