@@ -4,6 +4,12 @@ var helper   = require('./helper');
 var template = require('./template');
 
 module.exports = {
+  /**
+   *
+   * @param {String} name
+   * @param {Object} proto
+   * @returns {Object}
+   */
   create: function(name, proto) {
     /**
      * @private
@@ -52,12 +58,6 @@ module.exports = {
       proto._html  = template.innerHTML;
     });
 
-    // mix to proto
-    var mixins = proto.mixin || [];
-    mixins.forEach(function(mixin) {
-      helper.mix(proto, mixin);
-    });
-
     // mix claylump implementation
     helper.mix(proto, ClayElement.prototype);
 
@@ -73,20 +73,34 @@ function ClayElement() {
 helper.mix(ClayElement.prototype, {
   /**
    *
+   * @private
+   */
+  _injectUseObject: function() {
+    var keys = Object.keys(this.use || {}), i = 0, alias;
+    while ((alias = keys[i++])) {
+      if (this[alias]) {
+        throw new Error('Conflict assign property `' + alias + '`!')
+      }
+      this[alias] = this.use[alias](this);
+    }
+    delete this.use;
+  },
+  /**
+   *
    */
   createdCallback : function() {
+
     // create virtual template & actual dom
     this.createShadowRoot();
+    this.template = template.create(this._html, this);
+    this.root     = this.template.createElement(this._doc);
+    this.shadowRoot.appendChild(this.root);
+    this.template.drawLoop(this.root);
 
     // resolve use injection
-    var factories = helper.mix({}, this.use || {}), // clone!
-        keys      = Object.keys(factories),
-        i = 0, alias;
+    this._injectUseObject();
 
-    while ((alias = keys[i++])) {
-      this.use[alias] = factories[alias](this);
-    }
-
+    // original
     this._created();
   },
 
@@ -94,10 +108,7 @@ helper.mix(ClayElement.prototype, {
    *
    */
   attachedCallback : function() {
-    this.template = template.create(this._html, this);
-    this.root     = this.template.createElement(this._doc);
-    this.shadowRoot.appendChild(this.root);
-    this.template.drawLoop(this.root);
+    // original
     this._attached();
   },
 
@@ -106,6 +117,8 @@ helper.mix(ClayElement.prototype, {
    */
   detachedCallback : function() {
     this.template.destroy();
+
+    // original
     this._detached();
   },
 
@@ -113,6 +126,7 @@ helper.mix(ClayElement.prototype, {
    *
    */
   attributeChangedCallback : function() {
+    // original
     this._attrChanged();
   }
 });
