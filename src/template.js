@@ -12,6 +12,11 @@ var REX_ESCAPE_START = /{{/g;
 var REX_ESCAPE_END   = /}}/g;
 
 module.exports = {
+  /**
+   * @param {String} html
+   * @param {Object} scope
+   * @returns {ClayTemplate}
+   */
   create: function(html, scope) {
     return new ClayTemplate(html, scope);
   }

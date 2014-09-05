@@ -1,17 +1,19 @@
 'use strict';
 
 /**
- * @param {Object} given
- * @param {Object} passed
+ * @param {Object} to
+ * @param {Object} from
  * @return {Object}
  */
-function mix(given, passed) {
-  var i = 0, ary = Object.keys(passed), iz = ary.length, prop;
+function mix(to, from, force) {
+  var i = 0, ary = Object.keys(from), iz = ary.length, prop;
   for (; i<iz; i++) {
     prop = ary[i];
-    given[prop] = passed[prop];
+    if (force || !to[prop]) {
+      to[prop] = from[prop];
+    }
   }
-  return given;
+  return to;
 }
 
 /**
@@ -19,6 +21,15 @@ function mix(given, passed) {
  */
 function isFunction(value) {
   return typeof value === 'function';
+}
+
+/**
+ * @param {Object} obj
+ * @returns {*}
+ */
+function clone(obj) {
+  return Array.isArray(obj) ? obj.slice(0)
+                            : mix({}, obj)
 }
 
 /**
@@ -49,6 +60,7 @@ window.requestAnimationFrame  = window.requestAnimationFrame || window.mozReques
 module.exports = {
   noop      : function noop() {},
   mix       : mix,
+  clone     : clone,
   ready     : ready,
   is        : {
     func : isFunction
