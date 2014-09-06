@@ -18,6 +18,15 @@ function mix(to, from, overwrite) {
 }
 
 /**
+ * fake array (like NodeList, Arguments etc) convert to Array
+ * @param {*} fakeArray
+ * @returns {Array}
+ */
+function toArray(fakeArray) {
+  return Array.prototype.slice.call(fakeArray);
+}
+
+/**
  * @param {*} handler
  */
 function isFunction(value) {
@@ -71,6 +80,7 @@ module.exports = {
   mix       : mix,
   clone     : clone,
   ready     : ready,
+  toArray   : toArray,
 
   isFunction          : isFunction,
   isCustomElementName : isCustomElementName

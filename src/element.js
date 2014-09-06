@@ -89,23 +89,27 @@ module.exports = {
     });
 
     // extends element
-    var superProto;
+    var baseElement;
     if (proto.extends) {
       // FIXME cannot use `is="x-child"` in `<template>`
-      superProto = Object.create(proto._doc.createElement(proto.extends).constructor).prototype;
+
+      // element instance -> constructor -> create host object
+      baseElement = Object.create(proto._doc.createElement(proto.extends).constructor);
 
       if (helper.isCustomElementName(proto.extends)) {
         // extends custom element
-        proto      = helper.mix(helper.mix({}, superProto), proto, true);
-        superProto = HTMLElement.prototype;
+        // FIXME create baseElements prototype by deeply clone
+        proto           = helper.mix(helper.clone(baseElement.prototype), proto, true);
+        proto.__super__ = baseElement.prototype;
+        baseElement     = HTMLElement;
       }
 
     } else {
       // new custom element
-      superProto = HTMLElement.prototype;
+      baseElement = HTMLElement;
     }
 
-    return helper.mix(Object.create(superProto), proto);
+    return helper.mix(Object.create(baseElement.prototype), proto);
   }
 };
 
@@ -135,6 +139,7 @@ helper.mix(ClayElement.prototype, {
   _clonePropertyObjects: function() {
     var i = 0, key;
     while ((key = this._protects[i++])) {
+      // FIXME create own object|array by deeply clone
       this[key] = helper.clone(this[key]);
     }
   },
@@ -186,5 +191,26 @@ helper.mix(ClayElement.prototype, {
   attributeChangedCallback : function() {
     // original
     this._attrChanged();
+  },
+
+  /**
+   * @param {String} methodName
+   * @param {*} ...
+   */
+  super: function() {
+    if (!this.__super__) {
+      throw new Error('This element does not have the `__super__`');
+    }
+
+    var origArgs    = helper.toArray(arguments),
+        methodName  = origArgs.slice(0, 1),
+        passArgs    = origArgs.slice(1),
+        superMethod = this.__super__[methodName];
+
+    if (helper.isFunction(superMethod)) {
+      return superMethod.apply(this, passArgs);
+    } else {
+      throw new Error('Does not exists method in super element specified: ' + superMethod);
+    }
   }
 });

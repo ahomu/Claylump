@@ -20,6 +20,7 @@ describe 'ClayRegister', ->
 
       assert testEl.foo == 'bar'
       assert testEl.bar == 'baz'
+      assert testEl.hoge() == 'hoge'
       assert typeof testEl.createdCallback  == 'function'
       done()
 
@@ -41,8 +42,13 @@ describe 'ClayRegister', ->
         assert testEl.foo == 'baz'
         assert testEl.bar == 'baz'
         assert testEl.qux == 'bar'
+        assert testEl.hoge() == 'fuga'
+        assert testEl.hige() == 'piyo'
+        assert testEl.super('hoge') == 'hoge'
 
         testEl = document.createElement 'x-test'
         assert testEl.foo == 'bar'
         assert testEl.bar == 'baz'
+        assert testEl.hoge() == 'hoge'
+
         done()
