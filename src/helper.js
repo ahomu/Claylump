@@ -27,10 +27,35 @@ function toArray(fakeArray) {
 }
 
 /**
- * @param {*} handler
+ * @param {*} value
+ * @returns {Boolean}
  */
 function isFunction(value) {
   return typeof value === 'function';
+}
+
+/**
+ * @param {*} value
+ * @returns {Boolean}
+ */
+function isString(value) {
+  return typeof value === 'string';
+}
+
+/**
+ * @param {*} value
+ * @returns {Boolean}
+ */
+function isArray(value) {
+  return toString(value) === '[object Array]';
+}
+
+/**
+ * @param {*} value
+ * @returns {string}
+ */
+function toString(value) {
+  return Object.prototype.toString.call(value);
 }
 
 /**
@@ -81,7 +106,10 @@ module.exports = {
   clone     : clone,
   ready     : ready,
   toArray   : toArray,
+  toString  : toString,
 
+  isString            : isString,
+  isArray             : isArray,
   isFunction          : isFunction,
   isCustomElementName : isCustomElementName
 };

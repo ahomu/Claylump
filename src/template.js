@@ -3,8 +3,9 @@
 var h          = require('virtual-dom/h');
 var diff       = require('virtual-dom/diff');
 var patch      = require('virtual-dom/patch');
-var htmlparser = require("htmlparser");
+var htmlParser = require("htmlParser");
 var helper     = require("./helper");
+var tmplHelper = require("./template-helper");
 var create     = require('virtual-dom/create-element');
 
 var REX_INTERPOLATE  = /\{\{[^{}]*}}/g;
@@ -39,7 +40,7 @@ function ClayTemplate(html, scope) {
   this.tmpl  = html;
   this.scope = scope;
 
-  this.handler = new htmlparser.DefaultHandler(function (err, dom) {
+  this.handler = new htmlParser.DefaultHandler(function (err, dom) {
     if (err) {
       console.error(err);
     }
@@ -48,7 +49,7 @@ function ClayTemplate(html, scope) {
     ignoreWhitespace : true,
     verbose          : false
   });
-  this.parser = new htmlparser.Parser(this.handler);
+  this.parser = new htmlParser.Parser(this.handler);
 
   this.init();
 }
@@ -250,6 +251,7 @@ helper.mix(ClayTemplate.prototype, {
         children = dom.children || [],
         attrs    = {},
         style    = {},
+        hooks    = {},
         keys, key, i = 0;
 
     switch(type) {
@@ -263,14 +265,17 @@ helper.mix(ClayTemplate.prototype, {
         // attributes
         keys = Object.keys(orgAttrs);
         while ((key = keys[i++])) {
+          if (tmplHelper[key]) {
+            hooks[key] = hook(tmplHelper[key].bind(this));
+          }
           attrs[key] = applyInterpolateValues(orgAttrs[key], this.scope);
         }
 
         // create vtree
-        return h(tag, {
+        return h(tag, helper.mix(hooks, {
             attributes : attrs,
             style      : style
-          },
+          }),
           children.map(this.convertParsedDomToVTree, this).filter(function(v) { return !!v; })
         );
         break;
@@ -296,7 +301,11 @@ function applyInterpolateValues(str, obj) {
     while ((needle = matches[i++])) {
       path  = needle.slice(2, -2); // '{{foo.bar}}' -> 'foo.bar'
       value = getValueFromDottedPath(path, obj);
-      str = str.replace(needle, escapeInterpolateSymbol(value));
+      if (helper.isString(value)) {
+        str = str.replace(needle, escapeInterpolateSymbol(value));
+      } else if (helper.isArray(value)) {
+        str = helper.toString(value);
+      }
     }
   }
   return str;
@@ -333,4 +342,16 @@ function convertCssStringToObject(cssStr) {
     retStyle[prop_value[0]] = prop_value[1];
   }
   return retStyle;
+}
+
+function Type(fn) {
+  this.fn = fn
+}
+
+Type.prototype.hook = function () {
+  this.fn.apply(this, arguments)
+};
+
+function hook(fn) {
+  return new Type(fn)
 }
