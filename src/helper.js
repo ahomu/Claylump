@@ -18,6 +18,40 @@ function mix(to, from, overwrite) {
 }
 
 /**
+ * shallow flatten
+ * @param {Array} list
+ * @returns {Array}
+ */
+function flatten(list) {
+  var i = 0, item, ret = [];
+  while ((item = list[i++])) {
+    if (isArray(item)) {
+      ret = ret.concat(item);
+    } else {
+      ret.push(item);
+    }
+  }
+  return ret;
+}
+
+/**
+ * @param {Object} obj
+ * @returns {*}
+ */
+function clone(obj) {
+  return Array.isArray(obj) ? obj.slice(0)
+                            : mix({}, obj)
+}
+
+/**
+ * @param {*} value
+ * @returns {string}
+ */
+function toString(value) {
+  return Object.prototype.toString.call(value);
+}
+
+/**
  * fake array (like NodeList, Arguments etc) convert to Array
  * @param {*} fakeArray
  * @returns {Array}
@@ -46,16 +80,16 @@ function isString(value) {
  * @param {*} value
  * @returns {Boolean}
  */
-function isArray(value) {
-  return toString(value) === '[object Array]';
+function isNumber(value) {
+  return typeof value === 'number';
 }
 
 /**
  * @param {*} value
- * @returns {string}
+ * @returns {Boolean}
  */
-function toString(value) {
-  return Object.prototype.toString.call(value);
+function isArray(value) {
+  return toString(value) === '[object Array]';
 }
 
 /**
@@ -64,15 +98,6 @@ function toString(value) {
  */
 function isCustomElementName(localName) {
   return localName.indexOf('-') !== -1;
-}
-
-/**
- * @param {Object} obj
- * @returns {*}
- */
-function clone(obj) {
-  return Array.isArray(obj) ? obj.slice(0)
-                            : mix({}, obj)
 }
 
 /**
@@ -104,11 +129,13 @@ module.exports = {
   noop      : function noop() {},
   mix       : mix,
   clone     : clone,
+  flatten   : flatten,
   ready     : ready,
   toArray   : toArray,
   toString  : toString,
 
   isString            : isString,
+  isNumber            : isNumber,
   isArray             : isArray,
   isFunction          : isFunction,
   isCustomElementName : isCustomElementName

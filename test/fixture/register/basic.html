@@ -4,8 +4,10 @@
 
 <script>
   Claylump('x-test', {
-    foo : 'bar',
-    bar : 'baz',
+    scope: {
+      foo : 'bar',
+      bar : 'baz'
+    },
     hoge: function() {
       return 'hoge';
     }

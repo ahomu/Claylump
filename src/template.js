@@ -8,14 +8,18 @@ var helper     = require("./helper");
 var tmplHelper = require("./template-helper");
 var create     = require('virtual-dom/create-element');
 
-var REX_INTERPOLATE  = /\{\{[^{}]*}}/g;
+var REX_INTERPOLATE  = /{{[^{}]+}}/g;
+var REX_REPEAT_FORM  = /{{(\w+)\sin\s([\w\.]+)}}/;
 var REX_ESCAPE_START = /{{/g;
 var REX_ESCAPE_END   = /}}/g;
+
+var ATTR_REPEAT      = 'cl-repeat';
 
 var STR_ESCAPE_REPLACEMENT_START = '\\{\\{';
 var STR_ESCAPE_REPLACEMENT_END   = '\\}\\}';
 
 /**
+ * TODO refactor & improve performance
  * @class ClayTemplate
  */
 module.exports = {
@@ -112,7 +116,6 @@ helper.mix(ClayTemplate.prototype, {
    *
    */
   observeScope: function() {
-    // TODO refactor
     var matches = this.tmpl.match(REX_INTERPOLATE),
         uniq = {}, i = 0, symbol;
 
@@ -175,9 +178,9 @@ helper.mix(ClayTemplate.prototype, {
    * @returns {VTree}
    */
   createVTree: function() {
-    console.time('convert vtree');
-    var ret = this.currentVTree = this.convertParsedDomToVTree(this.struct);
-    console.timeEnd('convert vtree');
+    console.time('compute vtree');
+    var ret = this.currentVTree = convertParsedDomToVTree(this.struct, this.scope);
+    console.timeEnd('compute vtree');
     return ret;
   },
   /**
@@ -205,8 +208,10 @@ helper.mix(ClayTemplate.prototype, {
    *
    */
   _update: function() {
+    console.time('compute vtree');
     var current = this.currentVTree,
-        updated = this.convertParsedDomToVTree(this.struct);
+        updated = convertParsedDomToVTree(this.struct, this.scope);
+    console.timeEnd('compute vtree');
 
     console.time('compute diff');
     this.diffQueue = diff(current, updated);
@@ -237,89 +242,153 @@ helper.mix(ClayTemplate.prototype, {
    */
   destroy: function() {
     this.scope = this.tmpl = this.struct = this.parser = this.handler = null;
-  },
-  /**
-   *
-   * @param {Object} dom
-   * @returns {*}
-   */
-  convertParsedDomToVTree : function(dom) {
-    var tag      = dom.name,
-        type     = dom.type,
-        data     = dom.data,
-        orgAttrs = dom.attribs || {},
-        children = dom.children || [],
-        attrs    = {},
-        style    = {},
-        hooks    = {},
-        keys, key, i = 0;
-
-    switch(type) {
-      case 'tag':
-        // styles
-        if (orgAttrs.style) {
-          style = applyInterpolateValues(orgAttrs.style, this.scope);
-          style = convertCssStringToObject(style);
-        }
-
-        // attributes
-        keys = Object.keys(orgAttrs);
-        while ((key = keys[i++])) {
-          if (tmplHelper[key]) {
-            hooks[key] = hook(tmplHelper[key].bind(this));
-          }
-          attrs[key] = applyInterpolateValues(orgAttrs[key], this.scope);
-        }
-
-        // create vtree
-        return h(tag, helper.mix(hooks, {
-            attributes : attrs,
-            style      : style
-          }),
-          children.map(this.convertParsedDomToVTree, this).filter(function(v) { return !!v; })
-        );
-        break;
-
-      case 'text':
-        data = applyInterpolateValues(data, this.scope);
-        return String(data);
-        break;
-
-      case 'comment':
-        // TODO create comment node?
-        return null;
-        break;
-    }
   }
 });
 
-function applyInterpolateValues(str, obj) {
+/**
+ *
+ * @param {Object} dom
+ * @param {Object} scope
+ * @param {Boolean} [ignoreRepeat]
+ * @returns {Object|Array}
+ */
+function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
+  var scope    = scope,
+      tag      = dom.name,
+      type     = dom.type,
+      data     = dom.data,
+      orgAttrs = dom.attribs || {},
+      children = dom.children || [],
+      attrs    = {},
+      style    = {},
+      hooks    = {},
+      keys, key, i = 0;
+
+  switch(type) {
+    case 'tag':
+      // styles
+      if (orgAttrs.style) {
+        style = applyInterpolateValues(orgAttrs.style, scope);
+        style = convertCssStringToObject(style);
+      }
+
+      // attributes
+      keys = Object.keys(orgAttrs);
+      while ((key = keys[i++])) {
+
+        // register hook from template helper
+        if (tmplHelper[key]) {
+          hooks[key] = hook(tmplHelper[key].bind(this));
+
+        // repeat syntax
+        } else if (key === ATTR_REPEAT && !ignoreRepeat) {
+
+          var repeatScopes = createRepeatScopes(orgAttrs[key], scope)
+          return repeatScopes.map(function(scope) {
+            return convertParsedDomToVTree(dom, scope, true)
+          });
+        }
+
+        attrs[key] = applyInterpolateValues(orgAttrs[key], scope);
+      }
+
+      // flatten children
+      children = children.map(function(child) {
+                            return convertParsedDomToVTree(child, scope);
+                          })
+                         .filter(function(v) { return !!v; });
+      children = helper.flatten(children);
+
+      // create vtree
+      return h(tag, helper.mix(hooks, {
+          attributes : attrs,
+          style      : style
+        }),
+        children
+      );
+      break;
+
+    case 'text':
+      data = applyInterpolateValues(data, scope);
+      return String(data);
+      break;
+
+    case 'comment':
+      // ignore
+      return null;
+      break;
+  }
+}
+
+/**
+ * @param {String} repeatExpr
+ * @param {Object} parentScope
+ * @returns {Array}
+ */
+function createRepeatScopes(repeatExpr, parentScope) {
+  var matches = (repeatExpr || '').match(REX_REPEAT_FORM);
+  if (matches === null) {
+    throw new Error('Unexpected syntax for repeat: ' + repeatExpr)
+  }
+  var parentTargetPath = matches[2],
+      childScopeName   = matches[1],
+      repeatTarget     = getValueFromObjectPath(parentTargetPath, parentScope) || [];
+
+  return repeatTarget.map(function(item) {
+    var newScope = helper.clone(parentScope);
+    newScope[childScopeName] = item;
+    return newScope;
+  });
+}
+
+/**
+ *
+ * @param {String} str
+ * @param {Object} scope
+ * @returns {*}
+ */
+function applyInterpolateValues(str, scope) {
   var matches = str.match(REX_INTERPOLATE),
       i = 0, needle, path, value;
 
   if (matches) {
     while ((needle = matches[i++])) {
-      path  = needle.slice(2, -2); // '{{foo.bar}}' -> 'foo.bar'
-      value = getValueFromDottedPath(path, obj);
+
+      path = needle.slice(2, -2); // '{{foo.bar}}' -> 'foo.bar'
+      value = getValueFromObjectPath(path, scope);
+
       if (helper.isString(value)) {
         str = str.replace(needle, escapeInterpolateSymbol(value));
+      } else if (helper.isNumber(value)) {
+        str = str.replace(needle, value);
       } else if (helper.isArray(value)) {
-        str = helper.toString(value);
+        str = value.toString();
+      } else {
+        // noop
       }
     }
   }
   return str;
 }
 
+/**
+ * @param {String} text
+ * @returns {String}
+ */
 function escapeInterpolateSymbol(text) {
   return text.replace(REX_ESCAPE_START, STR_ESCAPE_REPLACEMENT_START)
              .replace(REX_ESCAPE_END,   STR_ESCAPE_REPLACEMENT_END);
 }
 
-// TODO add cache map?
-function getValueFromDottedPath(path, obj) {
+/**
+ *
+ * @param {String} path
+ * @param {Object} startScope
+ * @returns {*}
+ */
+function getValueFromObjectPath(path, startScope) {
   var stack = path.split('.'),
-      ret   = obj,
+      ret   = startScope,
       i = 0, key;
 
   while ((key = stack[i++])) {
@@ -332,6 +401,10 @@ function getValueFromDottedPath(path, obj) {
   return ret;
 }
 
+/**
+ * @param {String} cssStr
+ * @returns {Object}
+ */
 function convertCssStringToObject(cssStr) {
   var cssStrings = cssStr.replace(/\s/g, '').split(';'),
       retStyle   = {},
@@ -344,14 +417,25 @@ function convertCssStringToObject(cssStr) {
   return retStyle;
 }
 
-function Type(fn) {
+/**
+ * hook class
+ * @class HookWrapper
+ * @param {Function} fn
+ * @constructor
+ */
+function HookWrapper(fn) {
   this.fn = fn
 }
 
-Type.prototype.hook = function () {
+HookWrapper.prototype.hook = function () {
   this.fn.apply(this, arguments)
 };
 
+/**
+ * @param {Function} fn
+ * @returns {HookWrapper}
+ * @constructor
+ */
 function hook(fn) {
-  return new Type(fn)
+  return new HookWrapper(fn)
 }

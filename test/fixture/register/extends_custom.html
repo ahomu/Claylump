@@ -5,8 +5,10 @@
 <script>
   Claylump('x-test-extends', {
     extends : 'x-test',
-    foo     : 'baz',
-    qux     : 'bar',
+    scope: {
+      foo     : 'baz',
+      qux     : 'bar'
+    },
     hoge: function() {
       return 'fuga';
     },

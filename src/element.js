@@ -53,15 +53,14 @@ module.exports = {
       _html: '',
 
       /**
-       * @private
-       * @property {Array} _protects
-       */
-      _protects: [],
-
-      /**
        * @property {Element} root
        */
       root: null,
+
+      /**
+       * @property {Object} scope
+       */
+      scope : {},
 
       /**
        * @property {Object} events
@@ -74,11 +73,6 @@ module.exports = {
       use: {}
     };
 
-    // protect property objects reference
-    proto._protects = Object.keys(proto).filter(function(key) {
-      return typeof proto[key] === 'object' && !defaults[key];
-    });
-
     // mix claylump implementation
     helper.mix(helper.mix(proto, defaults), ClayElement.prototype, true);
 
@@ -89,7 +83,7 @@ module.exports = {
     });
 
     // extends element
-    var baseElement;
+    var baseElement, extendedScope;
     if (proto.extends) {
       // FIXME cannot use `is="x-child"` in `<template>`
 
@@ -99,7 +93,9 @@ module.exports = {
       if (helper.isCustomElementName(proto.extends)) {
         // extends custom element
         // FIXME create baseElements prototype by deeply clone
-        proto           = helper.mix(helper.clone(baseElement.prototype), proto, true);
+        extendedScope   = helper.mix(helper.clone(baseElement.prototype.scope), proto.scope, true);
+        proto           = helper.mix(helper.clone(baseElement.prototype),       proto,       true);
+        proto.scope     = extendedScope;
         proto.__super__ = baseElement.prototype;
         baseElement     = HTMLElement;
       }
@@ -123,12 +119,14 @@ helper.mix(ClayElement.prototype, {
    * @private
    */
   _injectUseObject: function() {
-    var keys = Object.keys(this.use || {}), i = 0, alias;
+    var self = this,
+        keys = Object.keys(this.use || {}), i = 0, alias;
+
     while ((alias = keys[i++])) {
-      if (this[alias]) {
+      if (self[alias]) {
         throw new Error('Conflict assign property `' + alias + '`!')
       }
-      this[alias] = this.use[alias](this);
+      self[alias] = this.use[alias](this);
     }
     delete this.use;
   },
@@ -137,11 +135,22 @@ helper.mix(ClayElement.prototype, {
    * @private
    */
   _clonePropertyObjects: function() {
-    var i = 0, key;
-    while ((key = this._protects[i++])) {
-      // FIXME create own object|array by deeply clone
-      this[key] = helper.clone(this[key]);
+    var scope = this.scope,
+        keys = Object.keys(scope), i = 0, key;
+
+    while ((key = keys[i++])) {
+      if (typeof scope[key] === 'object') {
+        // FIXME create own object|array by deeply clone
+        scope[key] = helper.clone(scope[key]);
+      }
     }
+  },
+
+  /**
+   * TODO スコープ用のオブジェクトは別でつくらないと継承しづらい
+   */
+  _pickScopeProperties: function() {
+
   },
 
   /**
@@ -166,7 +175,7 @@ helper.mix(ClayElement.prototype, {
 
     // create virtual template & actual dom
     this.createShadowRoot();
-    this.template = template.create(this._html, this);
+    this.template = template.create(this._html, this.scope);
     this.root     = this.template.createElement(this._doc);
     this.shadowRoot.appendChild(this.root);
     this.template.drawLoop(this.root);

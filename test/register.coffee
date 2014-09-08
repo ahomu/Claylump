@@ -18,8 +18,8 @@ describe 'ClayRegister', ->
     (load 'test/fixture/register/basic.html').onload = ->
       testEl = document.createElement 'x-test'
 
-      assert testEl.foo == 'bar'
-      assert testEl.bar == 'baz'
+      assert testEl.scope.foo == 'bar'
+      assert testEl.scope.bar == 'baz'
       assert testEl.hoge() == 'hoge'
       assert typeof testEl.createdCallback  == 'function'
       done()
@@ -29,7 +29,7 @@ describe 'ClayRegister', ->
     (load 'test/fixture/register/extends_native.html').onload = ->
       testEl = document.createElement 'div', 'x-extends-native'
 
-      assert testEl.foo == 'bar'
+      assert testEl.scope.foo == 'bar'
       assert typeof testEl.createdCallback  == 'function'
       done()
 
@@ -39,16 +39,16 @@ describe 'ClayRegister', ->
       (load 'test/fixture/register/extends_custom.html').onload = ->
         testEl = document.createElement 'x-test-extends'
 
-        assert testEl.foo == 'baz'
-        assert testEl.bar == 'baz'
-        assert testEl.qux == 'bar'
+        assert testEl.scope.foo == 'baz'
+        assert testEl.scope.bar == 'baz'
+        assert testEl.scope.qux == 'bar'
         assert testEl.hoge() == 'fuga'
         assert testEl.hige() == 'piyo'
         assert testEl.super('hoge') == 'hoge'
 
         testEl = document.createElement 'x-test'
-        assert testEl.foo == 'bar'
-        assert testEl.bar == 'baz'
+        assert testEl.scope.foo == 'bar'
+        assert testEl.scope.bar == 'baz'
         assert testEl.hoge() == 'hoge'
 
         done()
