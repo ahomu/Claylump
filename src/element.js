@@ -128,6 +128,7 @@ helper.mix(ClayElement.prototype, {
       }
       self[alias] = this.use[alias](this);
     }
+
     delete this.use;
   },
 
@@ -144,13 +145,6 @@ helper.mix(ClayElement.prototype, {
         scope[key] = helper.clone(scope[key]);
       }
     }
-  },
-
-  /**
-   * TODO スコープ用のオブジェクトは別でつくらないと継承しづらい
-   */
-  _pickScopeProperties: function() {
-
   },
 
   /**
