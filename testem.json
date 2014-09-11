@@ -8,6 +8,7 @@
   ],
   "serve_files": [
     "http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js",
+    "http://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.7.3/sinon-min.js",
     "./bower_components/power-assert/build/power-assert.js",
     "./dist/claylump.js",
     "./test/temp/*.js"

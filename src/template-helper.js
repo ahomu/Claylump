@@ -2,9 +2,13 @@
 
 var helper     = require("./helper");
 
-//template helperは自要素にだけ影響を与えられる
-
+/**
+ *
+ */
 module.exports = {
+  register: function(name, func) {
+    this[name] = func;
+  },
   hook: function(el) {
     console.log('hook', el);
   }

@@ -3,12 +3,27 @@ module.exports = function(config) {
     basePath: '',
     frameworks: ['mocha'],
     files: [
-      'http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js',
-      './bower_components/power-assert/build/power-assert.js',
-      './dist/claylump.js',
-      './test/*.coffee'
+      {
+       pattern: 'http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js',
+       watched: false, included: true, served: false
+      },
+      {
+       pattern: './bower_components/power-assert/build/power-assert.js',
+       watched: false, included: true, served: true
+      },
+      {
+       pattern: './dist/claylump.js',
+       watched: true, included: true, served: true
+      },
+      {
+       pattern: './test/*.coffee',
+       watched: true, included: true, served: true
+      },
+      {
+       pattern: './test/fixture/**/*.html',
+       watched: true, included: false, served: true
+      }
     ],
-    reporters: ['junit'],
     port: 9876,
     colors: false,
     logLevel: config.LOG_INFO,

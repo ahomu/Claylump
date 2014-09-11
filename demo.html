@@ -12,6 +12,7 @@
       </div><!-- .entry-meta -->
     </header><!-- .entry-header -->
 
+    <p hook="true"></p>
     <div class="entry-content">
       <p>The <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> has published two documents today:</p>
       <p>
@@ -21,7 +22,7 @@
         <div>「{{ary}}」</div>
 
       </p>
-      <ul class="show_items" hook="true">
+      <ul class="show_items">
         <li cl-repeat="{{item in items}}">
           hogehoge {{item.id}} {{author.name}} aa
           <span cl-repeat="{{tag in item.tags}}">

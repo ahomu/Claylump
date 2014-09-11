@@ -1,0 +1,13 @@
+<template cl-element="x-template-test"><h1>Hello World</h1></template>
+
+<script>
+  Claylump('x-template-test', {
+    scope: {
+      foo : 'bar',
+      bar : 'baz'
+    },
+    hoge: function() {
+      return 'hoge';
+    }
+  });
+</script>

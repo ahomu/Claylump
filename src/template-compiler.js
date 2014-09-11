@@ -67,6 +67,7 @@ helper.mix(ClayTemplateCompiler.prototype, {
  * @param {Object} domStructure
  */
 function compileDomStructure(domStructure) {
+  domStructure = domStructure || {};
   var data     = domStructure.data,
       attrs    = domStructure.attribs    || {},
       children = domStructure.children   || [],
@@ -83,7 +84,7 @@ function compileDomStructure(domStructure) {
   if (attrs.style) {
     domStructure.style = attrs.style;
     delete attrs.style;
-    evals.style = compileValue(attrs.style);
+    evals.style = compileValue(domStructure.style);
   }
 
   // attributes evaluator & hook

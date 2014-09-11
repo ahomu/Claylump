@@ -14,7 +14,7 @@ module.exports = {
   /**
    * @static
    * @param {String} html
-   * @param {Object} scope
+   * @param {Object} [scope]
    * @returns {ClayTemplate}
    */
   create: function(html, scope) {
@@ -25,11 +25,11 @@ module.exports = {
 /**
  *
  * @param {String} html
- * @param {Object} scope
+ * @param {Object} [scope]
  * @constructor
  */
 function ClayTemplate(html, scope) {
-  this.scope = scope;
+  this.scope = scope || {};
 
   this.compiled = tmplCompiler.create(html).compile();
 }
@@ -74,11 +74,14 @@ helper.mix(ClayTemplate.prototype, {
     console.timeEnd('compute vtree');
     return ret;
   },
+
   /**
+   * @param {Document} [doc]
+   * @returns {Element|Null}
    */
   createElement: function(doc) {
     return create(this.createVTree(), {
-      document: doc
+      document: doc || document
     });
   },
 

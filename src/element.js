@@ -21,7 +21,8 @@ module.exports = {
        * @property {Document} _doc
        */
       _doc:  document._currentScript ? document._currentScript.ownerDocument
-                                     : document.currentScript.ownerDocument,
+                                     : document.currentScript ? document.currentScript.ownerDocument
+                                                              : document,
       /**
        * @private
        * @method {Function} _created
@@ -58,6 +59,11 @@ module.exports = {
       root: null,
 
       /**
+       * @property {ClayTemplate} template
+       */
+      template: null,
+
+      /**
        * @property {Object} scope
        */
       scope : {},
@@ -79,7 +85,7 @@ module.exports = {
     // dom ready required
     helper.ready(function() {
       var template = proto._doc.querySelector('[cl-element="'+name+'"]');
-      proto._html  = template.innerHTML;
+      proto._html  = template ? template.innerHTML : '';
     });
 
     // extends element
@@ -129,13 +135,13 @@ helper.mix(ClayElement.prototype, {
       self[alias] = this.use[alias](this);
     }
 
-    delete this.use;
+    this.use = null;
   },
 
   /**
    * @private
    */
-  _clonePropertyObjects: function() {
+  _cloneScopeObjects: function() {
     var scope = this.scope,
         keys = Object.keys(scope), i = 0, key;
 
@@ -148,6 +154,13 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
+   * shorthand of template.invalidate
+   */
+  invalidate: function() {
+    this.template.invalidate();
+  },
+
+  /**
    *
    */
   createdCallback : function() {
@@ -156,7 +169,7 @@ helper.mix(ClayElement.prototype, {
     this._injectUseObject();
 
     // clone objects
-    this._clonePropertyObjects();
+    this._cloneScopeObjects();
 
     // original
     this._created();
@@ -171,8 +184,11 @@ helper.mix(ClayElement.prototype, {
     this.createShadowRoot();
     this.template = template.create(this._html, this.scope);
     this.root     = this.template.createElement(this._doc);
-    this.shadowRoot.appendChild(this.root);
-    this.template.drawLoop(this.root);
+
+    if (this.root) {
+      this.shadowRoot.appendChild(this.root);
+      this.template.drawLoop(this.root);
+    }
 
     // original
     this._attached();

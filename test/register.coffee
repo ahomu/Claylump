@@ -2,16 +2,13 @@
 
 describe 'ClayRegister', ->
 
-  load = null
-
-  beforeEach ->
-    load = (path) ->
-      link = document.createElement 'link'
-      link.rel = 'import'
-      link.href = path
-      head = document.querySelector 'head'
-      head.appendChild link
-      link
+  load = (path) ->
+    link = document.createElement 'link'
+    link.rel = 'import'
+    link.href = path
+    head = document.querySelector 'head'
+    head.appendChild link
+    link
 
   it 'register Claylump element', (done)->
 

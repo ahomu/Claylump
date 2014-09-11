@@ -7,9 +7,9 @@
  * @return {Object}
  */
 function mix(to, from, overwrite) {
-  var i = 0, ary = Object.keys(from), iz = ary.length, prop;
-  for (; i<iz; i++) {
-    prop = ary[i];
+  var i = 0, keys = Object.keys(from), prop;
+
+  while ((prop = keys[i++])) {
     if (overwrite || !to[prop]) {
       to[prop] = from[prop];
     }
@@ -63,7 +63,8 @@ function uniq(array) {
  * @returns {string}
  */
 function toString(value) {
-  return Object.prototype.toString.call(value);
+  var objStr = Object.prototype.toString.call(value);
+  return objStr.slice(objStr.indexOf(' ') + 1, -1);
 }
 
 /**
@@ -104,7 +105,7 @@ function isNumber(value) {
  * @returns {Boolean}
  */
 function isArray(value) {
-  return toString(value) === '[object Array]';
+  return toString(value) === 'Array';
 }
 
 /**
