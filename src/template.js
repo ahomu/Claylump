@@ -3,15 +3,12 @@
 var h            = require('virtual-dom/h');
 var diff         = require('virtual-dom/diff');
 var patch        = require('virtual-dom/patch');
-var htmlParser   = require("htmlParser");
 var helper       = require("./helper");
 var tmplCompiler = require("./template-compiler");
+var tmplObserver = require("./template-observer");
 var create       = require('virtual-dom/create-element');
 
-var REX_INTERPOLATE  = /{{[^{}]+}}/g;
-
 /**
- * TODO refactor & improve performance
  * @class ClayTemplate
  */
 module.exports = {
@@ -33,21 +30,12 @@ module.exports = {
  * @constructor
  */
 function ClayTemplate(html, scope) {
-  this.tmpl  = html;
   this.scope = scope;
 
-  this.handler = new htmlParser.DefaultHandler(function (err, dom) {
-    if (err) {
-      console.error(err);
-    }
-  }, {
-    enforceEmptyTags : true,
-    ignoreWhitespace : true,
-    verbose          : false
-  });
-  this.parser = new htmlParser.Parser(this.handler);
+  this.observer = tmplObserver.create(this.invalidate.bind(this));
+  this.observer.start(html, scope);
 
-  this.init();
+  this.compiled = tmplCompiler.create(html).compile();
 }
 
 helper.mix(ClayTemplate.prototype, {
@@ -58,25 +46,10 @@ helper.mix(ClayTemplate.prototype, {
   scope: {},
 
   /**
-   * @property {String} tmpl
+   * compiled DOM structure
+   * @property {Object} compiled
    */
-  tmpl: '',
-
-  /**
-   * Parsed DOM structure
-   * @property {Object} struct
-   */
-  struct: {},
-
-  /**
-   * @property {Function} parser
-   */
-  parser: null,
-
-  /**
-   * @property {Function} handler
-   */
-  handler : null,
+  compiled: {},
 
   /**
    * @private
@@ -97,94 +70,11 @@ helper.mix(ClayTemplate.prototype, {
   _invalidated: false,
 
   /**
-   *
-   */
-  init: function() {
-    this.parseHtml();
-    this.observeScope();
-    this.compileStructure()
-  },
-
-  /**
-   * compile dom structure
-   */
-  compileStructure: function() {
-    tmplCompiler.exec(this.struct);
-  },
-
-  /**
-   * parse html string
-   * restrict should be one root element
-   */
-  parseHtml: function() {
-    console.time('parse html');
-    this.parser.parseComplete(this.tmpl);
-    console.timeEnd('parse html');
-
-    if (this.handler.dom.length > 1) {
-      throw Error('Template must have exactly one root element. was: ' + this.tmpl);
-    }
-
-    return this.struct = this.handler.dom[0];
-  },
-
-  /**
-   * @property {Object} rootObserveTarget
-   */
-  rootObserveTarget: {},
-
-  /**
-   *
-   */
-  observeScope: function() {
-    var matches = this.tmpl.match(REX_INTERPOLATE),
-        uniq = {}, i = 0, symbol;
-
-    if (matches === null) {
-      return;
-    }
-
-    // unique list
-    while ((symbol = matches[i++])) {
-      symbol = symbol.slice(2, -2); // '{{foo.bar}}' -> 'foo.bar'
-      if (!uniq[symbol]) {
-        uniq[symbol] = true;
-      }
-    }
-
-    // interpolate path
-    // @see https://github.com/Polymer/observe-js
-    var observer = new CompoundObserver();
-    Object.keys(uniq).map(function(symbolPath) {
-      var host     = this.scope,
-          tokens   = symbolPath.split('.');
-
-      if (tokens.length > 1) {
-        // remove target property name;
-        tokens.splice(-1);
-
-        // fill object
-        var i = 0, token;
-        while ((token = tokens[i++])) {
-          host[token] || (host[token] = {});
-          host = host[token];
-        }
-      }
-
-      // add observe path
-      observer.addPath(this.scope, symbolPath);
-
-    }.bind(this));
-
-    observer.open(this.invalidate.bind(this));
-  },
-
-  /**
    * @returns {VTree}
    */
   createVTree: function() {
     console.time('compute vtree');
-    var ret = this._currentVTree = convertParsedDomToVTree(this.struct, this.scope);
+    var ret = this._currentVTree = convertParsedDomToVTree(this.compiled, this.scope);
     console.timeEnd('compute vtree');
     return ret;
   },
@@ -213,7 +103,7 @@ helper.mix(ClayTemplate.prototype, {
   _update: function() {
     console.time('compute vtree');
     var current = this._currentVTree,
-        updated = convertParsedDomToVTree(this.struct, this.scope);
+        updated = convertParsedDomToVTree(this.compiled, this.scope);
     console.timeEnd('compute vtree');
 
     console.time('compute diff');
@@ -246,7 +136,7 @@ helper.mix(ClayTemplate.prototype, {
    *
    */
   destroy: function() {
-    this.scope = this.tmpl = this.struct = this.parser = this.handler = null;
+    this.scope = this.compiled = this.observer = null;
   }
 });
 

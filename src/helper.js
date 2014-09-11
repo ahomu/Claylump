@@ -44,6 +44,21 @@ function clone(obj) {
 }
 
 /**
+ * @param {Array} array
+ * @returns {Array}
+ */
+function uniq(array) {
+  var ret = [], i = 0, item;
+
+  while ((item = array[i++])) {
+    if (ret.indexOf(item) === -1) {
+      ret.push(item);
+    }
+  }
+  return ret;
+}
+
+/**
  * @param {*} value
  * @returns {string}
  */
@@ -128,6 +143,7 @@ window.requestAnimationFrame  = window.requestAnimationFrame || window.mozReques
 module.exports = {
   noop      : function noop() {},
   mix       : mix,
+  uniq      : uniq,
   clone     : clone,
   flatten   : flatten,
   ready     : ready,
