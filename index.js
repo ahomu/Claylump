@@ -5,10 +5,13 @@ var helper       = require('./src/helper');
 
 window.Claylump = helper.mix(ClayRegister, {
 
-  Template: require('./src/template'),
-  Element : require('./src/element'),
+  Template : require('./src/template'),
+  Element  : require('./src/element'),
+  Observer : require('./src/observer'),
+  Event    : require('./src/event'),
+  Helper   : require('./src/helper'),
 
-  module : {
-    http: require('./src/modules/http')
+  modules : {
+    http : require('./src/modules/http')
   }
 });

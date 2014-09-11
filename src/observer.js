@@ -2,18 +2,18 @@
 
 /**
  * TODO implement
- * @class ClayEvent
+ * @class ClayObserver
  */
 module.exports = {
   /**
    * @static
-   * @returns {ClayEvent}
+   * @returns {ClayObserver}
    */
   create: function() {
-    return new ClayEvent();
+    return new ClayObserver();
   }
 };
 
-function ClayEvent() {
+function ClayObserver() {
 
 }

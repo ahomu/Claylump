@@ -5,7 +5,6 @@ var diff         = require('virtual-dom/diff');
 var patch        = require('virtual-dom/patch');
 var helper       = require("./helper");
 var tmplCompiler = require("./template-compiler");
-var tmplObserver = require("./template-observer");
 var create       = require('virtual-dom/create-element');
 
 /**
@@ -31,9 +30,6 @@ module.exports = {
  */
 function ClayTemplate(html, scope) {
   this.scope = scope;
-
-  this.observer = tmplObserver.create(this.invalidate.bind(this));
-  this.observer.start(html, scope);
 
   this.compiled = tmplCompiler.create(html).compile();
 }
@@ -98,7 +94,7 @@ helper.mix(ClayTemplate.prototype, {
   },
 
   /**
-   *
+   * @private
    */
   _update: function() {
     console.time('compute vtree');
@@ -136,7 +132,7 @@ helper.mix(ClayTemplate.prototype, {
    *
    */
   destroy: function() {
-    this.scope = this.compiled = this.observer = null;
+    this.scope = this.compiled = null;
   }
 });
 

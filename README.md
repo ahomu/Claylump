@@ -4,14 +4,14 @@ Javaの世界から帰ってきたのでリハビリ中
 
 ```html
 <template cl-element="hello-world">
-  <article id="post-3102" class="post-3102 post type-post status-publish format-standard hentry category-publication category-web-design-and-applications">
+  <article id="post-3102" class="{{acme_feature}} post-3102 post type-post status-publish format-standard hentry category-publication category-web-design-and-applications">
     <header class="entry-header">
 
       <h2 class="entry-title">
         <a href="http://www.w3.org/blog/news/archives/3102" rel="bookmark">Widget Updates Note, Introduction to {{acme_feature}} Draft Published</a>
       </h2>
 
-      <div class="entry-meta">
+      <div class="entry-meta" attr-test="{{acme_feature}}" style="width: {{acme_feature}}px;">
         <p>
           <span class="date"><time class="entry-date" datetime="2013-06-06T08:50:42+00:00">6 June 2013</time></span>						</p>
       </div><!-- .entry-meta -->
@@ -19,8 +19,20 @@ Javaの世界から帰ってきたのでリハビリ中
 
     <div class="entry-content">
       <p>The <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> has published two documents today:</p>
-      <p>{{author.name}} / {{author.mail}}</p>
-      <ul class="show_items">
+      <p>
+        {{author.name}} / {{author.mail}}
+        <hello-child attr-test="{{acme_feature}}"></hello-child>
+
+        <div>「{{ary}}」</div>
+
+      </p>
+      <ul class="show_items" hook="true">
+        <li cl-repeat="{{item in items}}">
+          hogehoge {{item.id}} {{author.name}} aa
+          <span cl-repeat="{{tag in item.tags}}">
+            {{tag.i}}
+          </span>
+        </li>
         <li>A Group Note of <a href="http://www.w3.org/TR/2013/NOTE-widgets-updates-20130606/">Widget Updates</a>. This specification defines a process and a document format to allow a user agent to update an installed widget package with a different version of a widget package. A widget cannot automatically update itself; instead, a widget relies on the user agent to manage the update process. The working group reached consensus to stop work on this specification. It is published for archival reasons and no longer progresses along the W3C’s Recommendation Track.</li>
         <li>A Working Draft of <a href="http://www.w3.org/TR/2013/WD-components-intro-20130606/">Introduction to {{acme_feature}}</a>. This document is a non-normative reference, which provides an overview of {{acme_feature}}. It summarizes the normative information in the respective specifications in easy-to-digest prose with illustrations.</li>
       </ul>
@@ -30,26 +42,45 @@ Javaの世界から帰ってきたのでリハビリ中
     <footer class="entry-meta">
       <!-- original: http://www.w3.org/blog/news/archives/3102 -->
     </footer><!-- .entry-meta -->
+
   </article>
 </template>
 
 <script>
   Claylump('hello-world', {
-    acme_feature: 'Web Components',
-    author: {
-      name: 'unknown',
-      mail: 'unknown@example.com'
+    scope: {
+      acme_feature: 'Web Components',
+      author: {
+        name: 'unknown',
+        mail: 'unknown@example.com'
+      },
+      items: [
+        {id: 1, tags: [{i: 1}, {i: 2}, {i:3}]},
+        {id: 2, tags: [{i: 4}, {i: 5}, {i:6}]},
+        {id: 3, tags: [{i: 7}, {i: 8}, {i:9}]}
+      ],
+      ary :[
+        'foo',
+        'bar',
+        'qux'
+      ]
     },
-    extend: 'div',
+    events: {
+
+    },
     use: {
+      http: Claylump.module.http
     },
-    mixin: [
-    ],
     createdCallback: function() {
       console.log('created');
     },
     attachedCallback: function() {
       console.log('attached');
+      setTimeout(function() {
+        this.scope.acme_feature =  Math.random() + '';
+        this.scope.items.push({id: 4, tags: [{i: 0}, {i: 0}, {i: 0}]})
+        this.template.invalidate();
+      }.bind(this), 3000)
     },
     detachedCallback: function() {
       console.log('detached');
