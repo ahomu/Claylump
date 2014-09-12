@@ -172,7 +172,7 @@ helper.mix(ClayElement.prototype, {
     this._cloneScopeObjects();
 
     // original
-    this._created();
+    this._created.apply(this, arguments);
   },
 
   /**
@@ -191,7 +191,7 @@ helper.mix(ClayElement.prototype, {
     }
 
     // original
-    this._attached();
+    this._attached.apply(this, arguments);
   },
 
   /**
@@ -201,7 +201,7 @@ helper.mix(ClayElement.prototype, {
     this.template.destroy();
 
     // original
-    this._detached();
+    this._detached.apply(this, arguments);
   },
 
   /**
@@ -209,7 +209,7 @@ helper.mix(ClayElement.prototype, {
    */
   attributeChangedCallback : function() {
     // original
-    this._attrChanged();
+    this._attrChanged.apply(this, arguments);
   },
 
   /**

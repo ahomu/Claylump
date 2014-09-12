@@ -85,4 +85,4 @@ describe 'ClayTemplate', ->
       assert spy.calledOnce
       assert el.innerHTML == '<h1>Test Complete!</h1>'
       done()
-    , 50
+    , 500
