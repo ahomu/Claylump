@@ -1,103 +1,67 @@
-#WIP
+# Claylump
 
-Javaの世界から帰ってきたのでリハビリ中
+Claylump is a Web Components wrapper with Virtual DOM.
+
+## Getting Started
+
+### Register element
 
 ```html
-<template cl-element="hello-world">
-  <article id="post-3102" class="{{acme_feature}} post-3102 post type-post status-publish format-standard hentry category-publication category-web-design-and-applications">
-    <header class="entry-header">
-
-      <h2 class="entry-title">
-        <a href="http://www.w3.org/blog/news/archives/3102" rel="bookmark">Widget Updates Note, Introduction to {{acme_feature}} Draft Published</a>
-      </h2>
-
-      <div class="entry-meta" attr-test="{{acme_feature}}" style="width: {{acme_feature}}px;">
-        <p>
-          <span class="date"><time class="entry-date" datetime="2013-06-06T08:50:42+00:00">6 June 2013</time></span>						</p>
-      </div><!-- .entry-meta -->
-    </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      <p>The <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> has published two documents today:</p>
-      <p>
-        {{author.name}} / {{author.mail}}
-        <hello-child attr-test="{{acme_feature}}"></hello-child>
-
-        <div>「{{ary}}」</div>
-
-      </p>
-      <ul class="show_items" hook="true">
-        <li cl-repeat="{{item in items}}">
-          hogehoge {{item.id}} {{author.name}} aa
-          <span cl-repeat="{{tag in item.tags}}">
-            {{tag.i}}
-          </span>
-        </li>
-        <li>A Group Note of <a href="http://www.w3.org/TR/2013/NOTE-widgets-updates-20130606/">Widget Updates</a>. This specification defines a process and a document format to allow a user agent to update an installed widget package with a different version of a widget package. A widget cannot automatically update itself; instead, a widget relies on the user agent to manage the update process. The working group reached consensus to stop work on this specification. It is published for archival reasons and no longer progresses along the W3C’s Recommendation Track.</li>
-        <li>A Working Draft of <a href="http://www.w3.org/TR/2013/WD-components-intro-20130606/">Introduction to {{acme_feature}}</a>. This document is a non-normative reference, which provides an overview of {{acme_feature}}. It summarizes the normative information in the respective specifications in easy-to-digest prose with illustrations.</li>
-      </ul>
-      <p>Learn more about the <a href="http://www.w3.org/2006/rwc/">Rich Web Client Activity</a>.</p>
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-      <!-- original: http://www.w3.org/blog/news/archives/3102 -->
-    </footer><!-- .entry-meta -->
-
-  </article>
+<template cl-element="x-test">
+  <h1>Hello World</h1>
+  <h2>{{foo}}</h2>
+  <h3>{{baz}}</h3>
 </template>
 
 <script>
-  Claylump('hello-world', {
+  Claylump('x-test', {
     scope: {
-      acme_feature: 'Web Components',
-      author: {
-        name: 'unknown',
-        mail: 'unknown@example.com'
-      },
-      items: [
-        {id: 1, tags: [{i: 1}, {i: 2}, {i:3}]},
-        {id: 2, tags: [{i: 4}, {i: 5}, {i:6}]},
-        {id: 3, tags: [{i: 7}, {i: 8}, {i:9}]}
-      ],
-      ary :[
-        'foo',
-        'bar',
-        'qux'
-      ]
-    },
-    events: {
-
-    },
-    use: {
-      http: Claylump.module.http
-    },
-    createdCallback: function() {
-      console.log('created');
-    },
-    attachedCallback: function() {
-      console.log('attached');
-      setTimeout(function() {
-        this.scope.acme_feature =  Math.random() + '';
-        this.scope.items.push({id: 4, tags: [{i: 0}, {i: 0}, {i: 0}]})
-        this.template.invalidate();
-      }.bind(this), 3000)
-    },
-    detachedCallback: function() {
-      console.log('detached');
-    },
-    attributeChangedCallback: function() {
-      console.log('attribute changed');
+      foo : 'bar',
+      baz : 'qux'
     }
   });
 </script>
-
 ```
 
-#TODO
-- expression support
-- event delegation
-- es6promise?
-- platform.js
+### Update DOM
 
-#restrict
-- cannot use inherit element like `is="x-child"` in `<template>`
+```javascript
+Claylump('x-test', {
+  scope: {
+    foo : 'bar',
+    baz : 'qux'
+  },
+  attachedCallback: function() {
+    setTimeout(function() {
+      this.scope.foo = 'changed';
+      this.invalidate(); // update (diff & patch) DOM!
+    }.bind(this), 1000);
+  }
+});
+```
+
+### Event delegation
+
+wip...
+
+### Scope observer
+
+wip...
+
+## Dependencies
+
+- [Matt-Esch/virtual-dom](https://github.com/Matt-Esch/virtual-dom)
+- [tautologistics/node-htmlparser](https://github.com/tautologistics/node-htmlparser)
+- [Polymer/platform](https://github.com/Polymer/platform)
+
+## TODO
+
+- [ ] event delegation
+- [ ] scope observer
+- [ ] http module
+- [ ] build platform.js
+- [ ] expression support
+
+## Current restriction
+
+- Cannot use inherit element like `is="x-child"` in `<template>`.
