@@ -1,9 +1,12 @@
 'use strict';
 
-var constants  = require("./constants");
 var helper     = require("./helper");
 var tmplHelper = require("./template-helper");
 var htmlParser = require("htmlParser");
+
+var REX_INTERPOLATE_SYMBOL = /{{[^{}]+}}/g,
+    REX_REPEAT_SYMBOL      = /{{(\w+)\sin\s([\w\.]+)}}/,
+    STR_REPEAT_ATTRIBUTE   = 'cl-repeat';
 
 /**
  * @class ClayTemplateCompiler
@@ -35,30 +38,43 @@ function ClayTemplateCompiler(html) {
       }),
       parser = new htmlParser.Parser(handler);
 
-  console.time('parse html');
+  // parse html
   parser.parseComplete(html);
-  console.timeEnd('parse html');
-
   if (handler.dom.length > 1) {
     throw Error('Template must have exactly one root element. was: ' + html);
   }
 
-  this.structure = handler.dom[0];
+  // compile
+  this.structure = compileDomStructure(handler.dom[0]);
 }
 
 helper.mix(ClayTemplateCompiler.prototype, {
   /**
+   @typedef {Object} DomStructure
+   @property {?String} data
+   @property {Object.<string, string>} attribs
+   @property {String} style
+   @property {Object.<string, function>} hooks
+   @property {Object} evaluators
+   @property {Object.<string, function>} evaluators.attrs
+   @property {?Function} evaluators.style
+   @property {?Function} evaluators.data
+   @property {?Function} evaluators.repeat
+   @property {Array} children
+   */
+
+  /**
    * parsed DOM structure
-   * @property
+   * @property {DomStructure}
    */
   structure: {},
 
   /**
    *
-   * @returns {Object}
+   * @returns {DomStructure}
    */
-  compile: function() {
-    return compileDomStructure(this.structure);
+  getCompiled: function() {
+    return this.structure;
   }
 });
 
@@ -74,9 +90,9 @@ function compileDomStructure(domStructure) {
       hooks    = domStructure.hooks      = {},
       evals    = domStructure.evaluators = {
         attrs  : {},
-        style  : false,
-        data   : false,
-        repeat : false
+        style  : null,
+        data   : null,
+        repeat : null
       },
       keys, key, i = 0;
 
@@ -95,9 +111,9 @@ function compileDomStructure(domStructure) {
       hooks[key] = hook(tmplHelper[key]);
     }
     // repeat
-    else if (key === constants.STR_REPEAT_ATTRIBUTE) {
-      evals.repeat = compileRepeatExpression(attrs[constants.STR_REPEAT_ATTRIBUTE]);
-      delete attrs[constants.STR_REPEAT_ATTRIBUTE];
+    else if (key === STR_REPEAT_ATTRIBUTE) {
+      evals.repeat = compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE]);
+      delete attrs[STR_REPEAT_ATTRIBUTE];
     }
     // interpolate
     else {
@@ -118,14 +134,14 @@ function compileDomStructure(domStructure) {
 
 /**
  * @param {String} str
- * @returns {Function|Null}
+ * @returns {?Function}
  */
 function compileValue(str) {
   str = (str || '');
-  var matches = str.match(constants.REX_INTERPOLATE_SYMBOL);
+  var matches = str.match(REX_INTERPOLATE_SYMBOL);
 
   if (matches === null) {
-    return;
+    return null;
   }
 
   return new Function('data',[
@@ -145,7 +161,7 @@ function compileValue(str) {
  * @returns {Function}
  */
 function compileRepeatExpression(repeatExpr) {
-  var matches = (repeatExpr || '').match(constants.REX_REPEAT_SYMBOL),
+  var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL),
       parentTargetPath,
       childScopeName;
 
