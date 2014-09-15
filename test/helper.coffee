@@ -90,6 +90,24 @@ describe 'ClayTemplate-Helper', ->
 
       assert orig != unique
 
+  describe 'matchSelector', ->
+
+    it 'match element when return true', ->
+      div = document.createElement 'div'
+      div.className = 'foo'
+      assert helper.matchElement(div, '.foo')
+
+      div.id = 'bar'
+      assert helper.matchElement(div, '#bar')
+
+    it 'not match element when return false', ->
+      div = document.createElement 'div'
+      div.className = 'qux'
+      assert !helper.matchElement(div, '.foo')
+
+      div.id = 'qux'
+      assert !helper.matchElement(div, '#bar')
+
   describe 'toString', ->
 
     it 'from primitive data', ->

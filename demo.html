@@ -1,5 +1,5 @@
 <template cl-element="hello-world">
-  <article id="post-3102" class="{{acme_feature}} post-3102 post type-post status-publish format-standard hentry category-publication category-web-design-and-applications">
+  <article id="post-3102" class="post-3102 post type-post status-publish format-standard hentry category-publication category-web-design-and-applications">
     <header class="entry-header">
 
       <h2 class="entry-title">
@@ -8,7 +8,10 @@
 
       <div class="entry-meta" attr-test="{{acme_feature}}" style="width: {{acme_feature}}px;">
         <p>
-          <span class="date"><time class="entry-date" datetime="2013-06-06T08:50:42+00:00">6 June 2013</time></span>						</p>
+          <span class="date js-mouseover js-click">
+            <time class="entry-date" datetime="2013-06-06T08:50:42+00:00">6 June 2013</time>
+          </span>
+        </p>
       </div><!-- .entry-meta -->
     </header><!-- .entry-header -->
 
@@ -17,9 +20,8 @@
       <p>The <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> has published two documents today:</p>
       <p>
         {{author.name}} / {{author.mail}}
-        <hello-child attr-test="{{acme_feature}}"></hello-child>
 
-        <div>「{{ary}}」</div>
+        <div class="js-click">on-click「{{ary}}」</div>
 
       </p>
       <ul class="show_items">
@@ -62,10 +64,18 @@
       ]
     },
     events: {
-
+      'click .js-click': function(evt) {
+        console.log('args', arguments);
+        console.log('this', this);
+        alert('hi');
+      },
+      'mouseover .js-mouseover': 'onDateMouseOver'
     },
     use: {
       http: Claylump.modules.http
+    },
+    onDateMouseOver: function() {
+      console.log('mouseover');
     },
     createdCallback: function() {
       console.log('created');

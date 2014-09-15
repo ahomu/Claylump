@@ -59,6 +59,37 @@ function uniq(array) {
 }
 
 /**
+ * get cached `matchesSelector` method name
+ */
+var matcherName;
+function getMatcherName() {
+  if (matcherName) {
+    return matcherName;
+  }
+
+  var list  = ['matches', 'webkitMatchesSelector', 'mozMatchesSelector', 'msMatchesSelector'],
+      proto = HTMLElement.prototype, i = 0, name;
+
+  while((name = list[i++])) {
+    if (proto[name]) {
+      matcherName = name;
+      return matcherName;
+    }
+  }
+}
+
+/**
+ * match element with selector
+ *
+ * @param {Element} element
+ * @param {String} selector
+ * @returns {boolean}
+ */
+function matchElement(element, selector) {
+  return element[getMatcherName()](selector);
+}
+
+/**
  * @param {*} value
  * @returns {string}
  */
@@ -109,6 +140,14 @@ function isArray(value) {
 }
 
 /**
+ * @param {*} value
+ * @returns {Boolean}
+ */
+function isObject(value) {
+  return toString(value) === 'Object';
+}
+
+/**
  * @param {String} localName
  * @returns {boolean}
  */
@@ -138,9 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 }, false);
 
-window.requestAnimationFrame  = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-                                window.webkitRequestAnimationFrame || window.oRequestAnimationFrame;
-
 module.exports = {
   noop      : function noop() {},
   mix       : mix,
@@ -150,6 +186,8 @@ module.exports = {
   ready     : ready,
   toArray   : toArray,
   toString  : toString,
+
+  matchElement : matchElement,
 
   isString            : isString,
   isNumber            : isNumber,

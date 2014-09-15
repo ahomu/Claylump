@@ -56,12 +56,15 @@ wip...
 
 ## TODO
 
-- [ ] event delegation
-- [ ] scope observer
+- [x] event delegation
+- [ ] add pub/sub event
+- [ ] implement `ClayElement#find(selector)`, `ClayElement#closestOf(selector, parentSelector)`
 - [ ] http module
 - [ ] build platform.js
-- [ ] expression support
+- [ ] scope observer
+- [ ] expression support...?
 
 ## Current restriction
 
+- Internet Explorer 10~ (using `Window#requestAnimationFrame`, `Element.matches`)
 - Cannot use inherit element like `is="x-child"` in `<template>`.

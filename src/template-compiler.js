@@ -55,12 +55,16 @@ helper.mix(ClayTemplateCompiler.prototype, {
    @property {Object.<string, string>} attribs
    @property {String} style
    @property {Object.<string, function>} hooks
-   @property {Object} evaluators
-   @property {Object.<string, function>} evaluators.attrs
-   @property {?Function} evaluators.style
-   @property {?Function} evaluators.data
-   @property {?Function} evaluators.repeat
-   @property {Array} children
+   @property {TplEvaluators} evaluators
+   @property {Array.<DomStructure>} children
+   */
+
+  /**
+   * @typedef {Object} TplEvaluators
+   * @property {Object.<string, function>} attrs
+   * @property {?Function} style
+   * @property {?Function} data
+   * @property {?Function} repeat
    */
 
   /**
@@ -99,8 +103,8 @@ function compileDomStructure(domStructure) {
   // styles evaluator
   if (attrs.style) {
     domStructure.style = attrs.style;
-    delete attrs.style;
     evals.style = compileValue(domStructure.style);
+    delete attrs.style;  // delete from orig attrib object
   }
 
   // attributes evaluator & hook
@@ -113,7 +117,7 @@ function compileDomStructure(domStructure) {
     // repeat
     else if (key === STR_REPEAT_ATTRIBUTE) {
       evals.repeat = compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE]);
-      delete attrs[STR_REPEAT_ATTRIBUTE];
+      delete attrs[STR_REPEAT_ATTRIBUTE]; // delete from orig attrib object
     }
     // interpolate
     else {

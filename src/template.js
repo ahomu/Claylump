@@ -7,6 +7,10 @@ var helper       = require("./helper");
 var tmplCompiler = require("./template-compiler");
 var create       = require('virtual-dom/create-element');
 
+window.requestAnimationFrame  = window.requestAnimationFrame ||
+                                window.mozRequestAnimationFrame ||
+                                window.webkitRequestAnimationFrame;
+
 /**
  * @class ClayTemplate
  */
@@ -31,7 +35,7 @@ module.exports = {
 function ClayTemplate(html, scope) {
   this.scope = scope || {};
 
-  this.compiled = tmplCompiler.create(html).compile();
+  this.compiled = tmplCompiler.create(html).getCompiled();
 }
 
 helper.mix(ClayTemplate.prototype, {
@@ -49,7 +53,7 @@ helper.mix(ClayTemplate.prototype, {
 
   /**
    * @private
-   * @property {VTree} _currentVTree
+   * @property {VirtualNode} _currentVTree
    */
   _currentVTree: null,
 
@@ -66,7 +70,7 @@ helper.mix(ClayTemplate.prototype, {
   _invalidated: false,
 
   /**
-   * @returns {VTree}
+   * @returns {VirtualNode}
    */
   createVTree: function() {
     console.time('compute vtree');
@@ -77,7 +81,7 @@ helper.mix(ClayTemplate.prototype, {
 
   /**
    * @param {Document} [doc]
-   * @returns {Element|Null}
+   * @returns {?Element}
    */
   createElement: function(doc) {
     return create(this.createVTree(), {
@@ -105,9 +109,7 @@ helper.mix(ClayTemplate.prototype, {
         updated = convertParsedDomToVTree(this.compiled, this.scope);
     console.timeEnd('compute vtree');
 
-    console.time('compute diff');
     this._diffQueue = diff(current, updated);
-    console.timeEnd('compute diff');
     this._currentVTree = updated;
 
     this._invalidated = false;
@@ -120,9 +122,7 @@ helper.mix(ClayTemplate.prototype, {
   drawLoop: function(targetRoot) {
     var patchDOM = function() {
       if (this._diffQueue) {
-        console.time('apply patch');
         patch(targetRoot, this._diffQueue);
-        console.timeEnd('apply patch');
         this._diffQueue = null;
       }
       window.requestAnimationFrame(patchDOM);
@@ -144,7 +144,7 @@ helper.mix(ClayTemplate.prototype, {
  * @param {Object} dom
  * @param {Object} scope
  * @param {Boolean} [ignoreRepeat]
- * @returns {Object|Array}
+ * @returns {VirtualNode}
  */
 function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
   var tag      = dom.name,

@@ -3,6 +3,10 @@
 var ClayRegister = require('./src/register');
 var helper       = require('./src/helper');
 
+/**
+ * @class Claylump
+ * @type {Object}
+ */
 window.Claylump = helper.mix(ClayRegister, {
 
   Template       : require('./src/template'),

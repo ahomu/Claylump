@@ -2,6 +2,7 @@
 
 var helper   = require('./helper');
 var template = require('./template');
+var event    = require('./event');
 
 /**
  * @class ClayElement
@@ -69,12 +70,12 @@ module.exports = {
       scope : {},
 
       /**
-       * @property {Object} events
+       * @property {Object.<string, (string|function)>} events
        */
       events: {},
 
       /**
-       * @property {Object} use
+       * @property {Object.<string, function>} use
        */
       use: {}
     };
@@ -165,6 +166,23 @@ helper.mix(ClayElement.prototype, {
    */
   createdCallback : function() {
 
+    // create virtual template & actual dom
+    this.createShadowRoot();
+    this.template = template.create(this._html, this.scope); // TODO
+    this.root     = this.template.createElement(this._doc);
+
+    if (!this.root) {
+      this.root = this._doc.createElement('div');
+    }
+
+    // set rootch
+
+    this.shadowRoot.appendChild(this.root);
+    this.template.drawLoop(this.root);
+
+    // create events
+    this.events = event.create(this.root, this.events); // TODO
+
     // resolve use injection
     this._injectUseObject();
 
@@ -179,16 +197,8 @@ helper.mix(ClayElement.prototype, {
    *
    */
   attachedCallback : function() {
-
-    // create virtual template & actual dom
-    this.createShadowRoot();
-    this.template = template.create(this._html, this.scope);
-    this.root     = this.template.createElement(this._doc);
-
-    if (this.root) {
-      this.shadowRoot.appendChild(this.root);
-      this.template.drawLoop(this.root);
-    }
+    // event delegation
+    this.events.enable(this);
 
     // original
     this._attached.apply(this, arguments);
@@ -198,7 +208,8 @@ helper.mix(ClayElement.prototype, {
    *
    */
   detachedCallback : function() {
-    this.template.destroy();
+    // disable event
+    this.events.disable();
 
     // original
     this._detached.apply(this, arguments);
