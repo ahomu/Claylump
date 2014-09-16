@@ -1,0 +1,28 @@
+<template cl-element="x-traversal-test">
+  <div>
+    <h1>{{hoge}}Hello World</h1>
+    <ul class="fbbq">
+      <li>
+        foo
+        <ul class="hfhp">
+          <li>hoge</li>
+          <li>fuga</li>
+          <li>hige</li>
+          <li id="fuga">
+            piyo
+            <ul class="uwu">
+              <li id="ury">uryyyy</li>
+              <li>wryyyy</li>
+              <li>ｳﾘｲｲｲｲｲ</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li>bar</li>
+      <li>baz</li>
+      <li>qux</li>
+    </ul>
+  </div>
+</template>
+
+<script>Claylump('x-traversal-test', {scope: {hoge: "fuga"}});</script>

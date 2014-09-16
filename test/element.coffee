@@ -193,3 +193,61 @@ describe 'ClayElement', ->
         el.super 'prop'
       catch
         assert true
+
+  describe 'element traversal helper', ->
+
+    it '`find` one return element', (done)->
+      (load 'test/fixture/element/traversal_test.html').onload = ->
+        el = document.createElement 'x-traversal-test'
+        document.body.appendChild el
+        found = el.find '#ury'
+
+        assert found instanceof Element
+
+        document.body.removeChild el
+        done()
+
+    it '`find` some return array', (done)->
+      (load 'test/fixture/element/traversal_test.html').onload = ->
+        el = document.createElement 'x-traversal-test'
+        document.body.appendChild el
+        found = el.find 'li'
+
+        assert found instanceof Array
+
+        document.body.removeChild el
+        done()
+
+    it '`closestOf` traverse parent', (done)->
+      (load 'test/fixture/element/traversal_test.html').onload = ->
+        el = document.createElement 'x-traversal-test'
+        document.body.appendChild el
+
+        found = el.closestOf el.find('#ury'), '.uwu'
+        assert found instanceof Element
+        assert found.tagName = 'UL'
+        assert found.className = 'uwu'
+
+        found = el.closestOf el.find('#ury'), 'li'
+        assert found instanceof Element
+        assert found.tagName = 'LI'
+        assert found.id = 'fuga'
+
+        found = el.closestOf el.find('#fuga'), 'ul'
+        assert found instanceof Element
+        assert found.tagName = 'UL'
+        assert found.className = 'hfhp'
+
+        document.body.removeChild el
+        done()
+
+    it '`closestOf` traverse fail', (done)->
+      (load 'test/fixture/element/traversal_test.html').onload = ->
+        el = document.createElement 'x-traversal-test'
+        document.body.appendChild el
+
+        found = el.closestOf el.find('#ury'), 'section'
+        assert found == null
+
+        document.body.removeChild el
+        done()

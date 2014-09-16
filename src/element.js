@@ -16,6 +16,7 @@ module.exports = {
    */
   create: function(name, proto) {
 
+    proto._name = name;
     var defaults = {
       /**
        * @private
@@ -162,6 +163,49 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
+   * children finder
+   *
+   * @param {String} selector
+   * @returns {?Element|Array}
+   */
+  find: function(selector) {
+    var found = helper.toArray(this.root.querySelectorAll(selector));
+
+    if (found.length <= 1) {
+      return found[0] || null;
+    } else {
+      return found;
+    }
+  },
+
+  /**
+   * closest parent helper
+   *
+   * @param {Element|Array} el
+   * @param {String} selector
+   * @returns {?Element|Array}
+   */
+  closestOf: function(el, selector) {
+    if (helper.isArray(el)) {
+      return el.map(function(e) {
+        return this.closestOf(e, selector);
+      }.bind(this));
+    }
+
+    var current = /** @type {Element} */ el.parentNode;
+    do {
+      if (current === this.root) {
+        return null;
+      }
+      if (helper.matchElement(current, selector)) {
+        return current;
+      }
+    } while ((current = current.parentNode));
+
+    return null;
+  },
+
+  /**
    *
    */
   createdCallback : function() {
@@ -225,7 +269,7 @@ helper.mix(ClayElement.prototype, {
 
   /**
    * @param {String} methodName
-   * @param {*} ...
+   * @param {...*} passArgs
    */
   super: function() {
     if (!this.__super__) {
