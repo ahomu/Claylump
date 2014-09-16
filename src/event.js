@@ -5,7 +5,6 @@ var helper = require('./helper');
 var REX_EVENT_SPRITTER = /\s+/;
 
 /**
- * TODO implement
  * @class ClayEvent
  */
 module.exports = {
@@ -32,23 +31,36 @@ function ClayEvent(el, events) {
 
 helper.mix(ClayEvent.prototype, {
   /**
+   * event host element
+   *
    * @property {Element} el
    */
   el: null,
 
   /**
+   * backbone.js style `events` object
+   *
+   * @example
+   *   events = {
+   *     'click .foo': 'onClick',
+   *     'click .bar': function(e) {
+   *       // do something
+   *     }
+   *   }
+   *
    * @property {Object.<string, (string|function)>} events
    */
   events: {},
 
   /**
    * @typedef {Object} DelegateInfo
-   * @property {String} event
-   * @property {Function} handler
+   * @property {String} event - event type name
+   * @property {Function} handler - event handler (bound & delegated)
    */
 
   /**
-   * store current delegate info for `disable`
+   * store current delegate info for using `disable()`
+   *
    * @property {Function.<DelegateInfo>} currentHandler
    */
   currentHandlers: [],

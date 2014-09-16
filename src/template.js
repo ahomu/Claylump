@@ -47,9 +47,9 @@ helper.mix(ClayTemplate.prototype, {
 
   /**
    * compiled DOM structure
-   * @property {Object} compiled
+   * @property {DomStructure} compiled
    */
-  compiled: {},
+  compiled: null,
 
   /**
    * @private
@@ -70,6 +70,8 @@ helper.mix(ClayTemplate.prototype, {
   _invalidated: false,
 
   /**
+   * create VirtualNode from compiled DomStructure & given scope
+   *
    * @returns {VirtualNode}
    */
   createVTree: function() {
@@ -80,6 +82,8 @@ helper.mix(ClayTemplate.prototype, {
   },
 
   /**
+   * create Element from VirtualNode
+   *
    * @param {Document} [doc]
    * @returns {?Element}
    */
@@ -90,7 +94,9 @@ helper.mix(ClayTemplate.prototype, {
   },
 
   /**
-   *
+   * invalidate scope VirtualNode needs updating diff
+   * No matter how many times as was called
+   * it is called only once in browser's next event loop
    */
   invalidate: function() {
     if (this._invalidated) {
@@ -101,6 +107,8 @@ helper.mix(ClayTemplate.prototype, {
   },
 
   /**
+   * compute VirtualNode diff
+   *
    * @private
    */
   _update: function() {
@@ -116,6 +124,8 @@ helper.mix(ClayTemplate.prototype, {
   },
 
   /**
+   * drawing requestAnimationFrame loop
+   * apply patch for dom when diff exists
    *
    * @param {Element} targetRoot
    */
@@ -132,7 +142,7 @@ helper.mix(ClayTemplate.prototype, {
   },
 
   /**
-   *
+   * destruct property references
    */
   destroy: function() {
     this.scope = this.compiled = null;
@@ -140,8 +150,9 @@ helper.mix(ClayTemplate.prototype, {
 });
 
 /**
+ * convert to VirtualNode from DomStructure
  *
- * @param {Object} dom
+ * @param {DomStructure} dom
  * @param {Object} scope
  * @param {Boolean} [ignoreRepeat]
  * @returns {VirtualNode}
@@ -207,6 +218,8 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
 }
 
 /**
+ * convert to object from style attribute value
+ *
  * @param {String} cssStr
  * @returns {Object}
  */

@@ -123,6 +123,7 @@ function ClayElement() {
 
 helper.mix(ClayElement.prototype, {
   /**
+   * inject utility with element instance
    *
    * @private
    */
@@ -141,6 +142,8 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
+   * protect object reference in prototype.scope
+   *
    * @private
    */
   _cloneScopeObjects: function() {
@@ -156,7 +159,7 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
-   * shorthand of template.invalidate
+   * shorthand of `template.invalidate()`
    */
   invalidate: function() {
     this.template.invalidate();
@@ -206,7 +209,8 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
-   *
+   * an instance of the element is created
+   * execute several initialize processes
    */
   createdCallback : function() {
 
@@ -214,13 +218,11 @@ helper.mix(ClayElement.prototype, {
     this.createShadowRoot();
     this.template = template.create(this._html, this.scope); // TODO
     this.root     = this.template.createElement(this._doc);
-
     if (!this.root) {
       this.root = this._doc.createElement('div');
     }
 
-    // set rootch
-
+    // set root element
     this.shadowRoot.appendChild(this.root);
     this.template.drawLoop(this.root);
 
@@ -238,7 +240,8 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
-   *
+   * an instance was inserted into the document
+   * enable events & call original attached callback
    */
   attachedCallback : function() {
     // event delegation
@@ -249,7 +252,8 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
-   *
+   * an instance was removed from the document
+   * disable events & call original detached callback
    */
   detachedCallback : function() {
     // disable event
@@ -260,7 +264,8 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
-   *
+   * an attribute was added, removed, or updated
+   * call original attr changed callback
    */
   attributeChangedCallback : function() {
     // original
@@ -268,6 +273,8 @@ helper.mix(ClayElement.prototype, {
   },
 
   /**
+   * call super element's methods
+   *
    * @param {String} methodName
    * @param {...*} passArgs
    */
