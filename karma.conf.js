@@ -4,7 +4,7 @@ module.exports = function(config) {
     frameworks: ['mocha'],
     files: [
       {
-       pattern: 'http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.4/platform.js',
+       pattern: './bower_components/platform/platform.js',
        watched: false, included: true, served: false
       },
       {

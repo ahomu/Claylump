@@ -225,18 +225,18 @@ describe 'ClayElement', ->
 
         found = el.closestOf el.find('#ury'), '.uwu'
         assert found instanceof Element
-        assert found.tagName = 'UL'
-        assert found.className = 'uwu'
+        assert found.tagName == 'UL'
+        assert found.className == 'uwu'
 
         found = el.closestOf el.find('#ury'), 'li'
         assert found instanceof Element
-        assert found.tagName = 'LI'
-        assert found.id = 'fuga'
+        assert found.tagName == 'LI'
+        assert found.id == 'fuga'
 
         found = el.closestOf el.find('#fuga'), 'ul'
         assert found instanceof Element
-        assert found.tagName = 'UL'
-        assert found.className = 'hfhp'
+        assert found.tagName == 'UL'
+        assert found.className == 'hfhp'
 
         document.body.removeChild el
         done()
