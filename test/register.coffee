@@ -12,7 +12,7 @@ describe 'ClayRegister', ->
 
   it 'register Claylump element', (done)->
 
-    (load 'test/fixture/register/basic.html').onload = ->
+    (load '/test/fixture/register/basic.html').onload = ->
       testEl = document.createElement 'x-test'
 
       assert testEl.scope.foo == 'bar'
@@ -23,7 +23,7 @@ describe 'ClayRegister', ->
 
   it 'extending native elements', (done)->
 
-    (load 'test/fixture/register/extends_native.html').onload = ->
+    (load '/test/fixture/register/extends_native.html').onload = ->
       testEl = document.createElement 'div', 'x-extends-native'
 
       assert testEl.scope.foo == 'bar'
@@ -32,8 +32,8 @@ describe 'ClayRegister', ->
 
   it 'extending custom elements', (done)->
 
-    (load 'test/fixture/register/basic.html').onload = ->
-      (load 'test/fixture/register/extends_custom.html').onload = ->
+    (load '/test/fixture/register/basic.html').onload = ->
+      (load '/test/fixture/register/extends_custom.html').onload = ->
         testEl = document.createElement 'x-test-extends'
 
         assert testEl.scope.foo == 'baz'
