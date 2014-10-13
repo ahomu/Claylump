@@ -42,7 +42,19 @@ Claylump('x-test', {
 
 ### Event delegation
 
-wip...
+```javascript
+Claylump('x-test', {
+  events: {
+    'dbclick .js-dbclick': function(evt) {
+      alert('hi');
+    },
+    'click .js-click': 'onClick'
+  },
+  onClick: function() {
+    console.log('click!');
+  },
+});
+```
 
 ### Scope observer
 
