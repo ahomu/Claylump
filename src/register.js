@@ -1,21 +1,20 @@
 'use strict';
 
-var element = require('./element');
-var helper  = require('./helper');
+import element from './element';
+import helper  from './helper';
+
+var REGISTRY_CLAY_ELEMENTS = {};
 
 /**
  * @param {String} name
  * @param {Object} [proto]
  */
-function ClayRegister(name, proto) {
+function ClayRegister(name, proto = {}) {
 
-  if (ClayRegister.registeredNames.indexOf(name) !== -1) {
-    // already registered (check for test)
+  if (REGISTRY_CLAY_ELEMENTS[name]) {
+    // already registered
     return;
   }
-  ClayRegister.registeredNames.push(name);
-
-  proto = proto || {};
 
   var options = {
     prototype: element.create(name, proto)
@@ -24,9 +23,8 @@ function ClayRegister(name, proto) {
   if (proto.extends && !helper.isCustomElementName(proto.extends)) {
     options.extends = proto.extends;
   }
-  document.registerElement(name, options);
+
+  REGISTRY_CLAY_ELEMENTS[name] = document.registerElement(name, options);
 }
 
-ClayRegister.registeredNames = [];
-
-module.exports = ClayRegister;
+export default ClayRegister;

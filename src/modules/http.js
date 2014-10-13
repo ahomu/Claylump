@@ -1,6 +1,6 @@
 'use strict';
 
-var helper = require('../helper');
+import helper from '../helper';;
 
 // test sample
 function Http(ctx) {
@@ -13,6 +13,6 @@ helper.mix(Http.prototype, {
   }
 });
 
-module.exports = function factory(context) {
+export default function factory(context) {
   return new Http(context);
 };

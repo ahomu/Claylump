@@ -1,15 +1,11 @@
 'use strict';
 
-var helper = require('./helper');
+import helper from './helper';
 
 var REX_EVENT_SPRITTER = /\s+/;
 
-/**
- * @class ClayEvent
- */
-module.exports = {
+export default {
   /**
-   * @static
    * @param {Element} el
    * @param {Object} events
    * @returns {ClayEvent}
@@ -20,22 +16,25 @@ module.exports = {
 };
 
 /**
- * @param {Element} el
- * @param {Object} events
- * @constructor
+ * @class ClayEvent
  */
-function ClayEvent(el, events) {
-  this.el     = el;
-  this.events = events;
-}
+class ClayEvent {
+  /**
+   * @param {Element} el
+   * @param {Object} events
+   * @constructor
+   */
+  constructor(el, events) {
+    this.currentHandlers = [];
+    this.setEl(el);
+    this.setEvents(events);
+  }
 
-helper.mix(ClayEvent.prototype, {
   /**
    * event host element
    *
    * @property {Element} el
    */
-  el: null,
 
   /**
    * backbone.js style `events` object
@@ -50,7 +49,6 @@ helper.mix(ClayEvent.prototype, {
    *
    * @property {Object.<string, (string|function)>} events
    */
-  events: {},
 
   /**
    * @typedef {Object} DelegateInfo
@@ -63,7 +61,20 @@ helper.mix(ClayEvent.prototype, {
    *
    * @property {Function.<DelegateInfo>} currentHandler
    */
-  currentHandlers: [],
+
+  /**
+   * @param {Element} el
+   */
+  setEl(el) {
+    this.el = el;
+  }
+
+  /**
+   * @param {Object} events
+   */
+  setEvents(events) {
+    this.events = events;
+  }
 
   /**
    * enable all delegate events
@@ -71,7 +82,7 @@ helper.mix(ClayEvent.prototype, {
    *
    * @param {Object} [context]
    */
-  enable: function(context) {
+  enable(context) {
     var i = 0, keys = Object.keys(this.events),
         eventAndSelector, methodOrName, handler;
 
@@ -84,7 +95,7 @@ helper.mix(ClayEvent.prototype, {
       eventAndSelector = eventAndSelector.split(REX_EVENT_SPRITTER);
       this.on(eventAndSelector[0], eventAndSelector[1], handler, context);
     }
-  },
+  }
 
   /**
    * assign event delegation
@@ -94,14 +105,14 @@ helper.mix(ClayEvent.prototype, {
    * @param {Function} handler
    * @param {*} context
    */
-  on: function(event, selector, handler, context) {
+  on(event, selector, handler, context) {
     var delegated = this.createHandler(selector, handler).bind(context);
     this.currentHandlers.push({
       event   : event,
       handler : delegated
     });
     this.el.addEventListener(event, delegated, true);
-  },
+  }
 
   /**
    * create delegated handler
@@ -110,7 +121,7 @@ helper.mix(ClayEvent.prototype, {
    * @param {Function} handler
    * @returns {Function}
    */
-  createHandler: function(selector, handler) {
+  createHandler(selector, handler) {
     /**
      * @param {Event} evt
      */
@@ -129,7 +140,7 @@ helper.mix(ClayEvent.prototype, {
         }
       } while ((target = target.parentNode));
     }
-  },
+  }
 
   /**
    * emit events to specified target element
@@ -145,18 +156,17 @@ helper.mix(ClayEvent.prototype, {
    * @param {Boolean} [bubble=false]
    * @param {Boolean} [cancel=true]
    */
-  emit: function(target, type, options, bubble, cancel) {
+  emit(target, type, options = {}, bubble = false, cancel = true) {
     if (helper.isArray(target)) {
-      helper.toArray(target).forEach(function(el) {
-        this.emit(el, type, options, bubble, cancel);
-      }.bind(this));
+      helper.toArray(target)
+            .forEach(el => this.emit(el, type, options, bubble, cancel));
       return;
     }
 
     var event;
-    options = helper.mix(options || {}, {
-      canBubble  : bubble || false,
-      cancelable : cancel || true,
+    helper.mix(options, {
+      canBubble  : bubble,
+      cancelable : cancel,
       view       : window
     });
 
@@ -190,16 +200,16 @@ helper.mix(ClayEvent.prototype, {
     }
 
     target.dispatchEvent(event);
-  },
+  }
 
   /**
    * disable all delegated events
    */
-  disable: function() {
+  disable() {
     var i = 0, obj;
     while ((obj = this.currentHandlers[i++])) {
       this.el.removeEventListener(obj.event, obj.handler, true);
     }
     this.currentHandlers = [];
   }
-});
+}

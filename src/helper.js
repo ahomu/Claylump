@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 }, false);
 
-module.exports = {
+export default {
   noop      : function noop() {},
   mix       : mix,
   uniq      : uniq,

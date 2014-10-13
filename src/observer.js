@@ -1,10 +1,6 @@
 'use strict';
 
-/**
- * TODO implement
- * @class ClayObserver
- */
-module.exports = {
+export default {
   /**
    * @static
    * @returns {ClayObserver}
@@ -14,6 +10,10 @@ module.exports = {
   }
 };
 
-function ClayObserver() {
+/**
+ * TODO implement
+ * @class ClayObserver
+ */
+class ClayObserver {
 
 }

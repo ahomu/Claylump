@@ -1,20 +1,17 @@
 'use strict';
 
-var h            = require('virtual-dom/h');
-var diff         = require('virtual-dom/diff');
-var patch        = require('virtual-dom/patch');
-var helper       = require("./helper");
-var tmplCompiler = require("./template-compiler");
-var create       = require('virtual-dom/create-element');
+import * as h            from 'virtual-dom/h';
+import * as diff         from 'virtual-dom/diff';
+import * as patch        from 'virtual-dom/patch';
+import helper       from "./helper";
+import tmplCompiler from "./template-compiler";
+import * as create       from 'virtual-dom/create-element';
 
 window.requestAnimationFrame  = window.requestAnimationFrame ||
                                 window.mozRequestAnimationFrame ||
                                 window.webkitRequestAnimationFrame;
 
-/**
- * @class ClayTemplate
- */
-module.exports = {
+export default {
   /**
    * @static
    * @param {String} html
@@ -27,59 +24,56 @@ module.exports = {
 };
 
 /**
- *
- * @param {String} html
- * @param {Object} [scope]
- * @constructor
+ * @class ClayTemplate
  */
-function ClayTemplate(html, scope) {
-  this.scope = scope || {};
+class ClayTemplate {
 
-  this.compiled = tmplCompiler.create(html).getCompiled();
-}
+  /**
+   *
+   * @param {String} html
+   * @param {Object} [scope]
+   * @constructor
+   */
+  constructor(html, scope = {}) {
+    this._diffQueue   = [];
+    this._invalidated = false;
 
-helper.mix(ClayTemplate.prototype, {
+    this.scope    = scope;
+    this.compiled = tmplCompiler.create(html).getCompiled();
+  }
 
   /**
    * @property {Object} scope
    */
-  scope: {},
 
   /**
    * compiled DOM structure
    * @property {DomStructure} compiled
    */
-  compiled: null,
 
   /**
    * @private
    * @property {VirtualNode} _currentVTree
    */
-  _currentVTree: null,
 
   /**
    * @private
    * @property {Array} _diffQueue
    */
-  _diffQueue: [],
 
   /**
    * @private
    * @property {Boolean} _invalidated
    */
-  _invalidated: false,
 
   /**
    * create VirtualNode from compiled DomStructure & given scope
    *
    * @returns {VirtualNode}
    */
-  createVTree: function() {
-    console.time('compute vtree');
-    var ret = this._currentVTree = convertParsedDomToVTree(this.compiled, this.scope);
-    console.timeEnd('compute vtree');
-    return ret;
-  },
+  createVTree() {
+    return this._currentVTree = convertParsedDomToVTree(this.compiled, this.scope);
+  }
 
   /**
    * create Element from VirtualNode
@@ -87,41 +81,39 @@ helper.mix(ClayTemplate.prototype, {
    * @param {Document} [doc]
    * @returns {?Element}
    */
-  createElement: function(doc) {
+  createElement(doc = document) {
     return create(this.createVTree(), {
-      document: doc || document
+      document: doc
     });
-  },
+  }
 
   /**
    * invalidate scope VirtualNode needs updating diff
    * No matter how many times as was called
    * it is called only once in browser's next event loop
    */
-  invalidate: function() {
+  invalidate() {
     if (this._invalidated) {
       return;
     }
     this._invalidated = true;
     setTimeout(this._update.bind(this), 4);
-  },
+  }
 
   /**
    * compute VirtualNode diff
    *
    * @private
    */
-  _update: function() {
-    console.time('compute vtree');
+  _update() {
     var current = this._currentVTree,
         updated = convertParsedDomToVTree(this.compiled, this.scope);
-    console.timeEnd('compute vtree');
 
     this._diffQueue = diff(current, updated);
     this._currentVTree = updated;
 
     this._invalidated = false;
-  },
+  }
 
   /**
    * drawing requestAnimationFrame loop
@@ -129,25 +121,25 @@ helper.mix(ClayTemplate.prototype, {
    *
    * @param {Element} targetRoot
    */
-  drawLoop: function(targetRoot) {
-    var patchDOM = function() {
+  drawLoop(targetRoot) {
+    var patchDOM = ()=> {
       if (this._diffQueue) {
         patch(targetRoot, this._diffQueue);
         this._diffQueue = null;
       }
       window.requestAnimationFrame(patchDOM);
-    }.bind(this);
+    };
 
     patchDOM();
-  },
+  }
 
   /**
    * destruct property references
    */
-  destroy: function() {
+  destroy() {
     this.scope = this.compiled = null;
   }
-});
+};
 
 /**
  * convert to VirtualNode from DomStructure
@@ -175,9 +167,7 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
 
       // repeat elements
       if (evals.repeat && !ignoreRepeat) {
-        return evals.repeat(scope).map(function(childScope) {
-          return convertParsedDomToVTree(dom, childScope, true)
-        });
+        return evals.repeat(scope).map(childScope => convertParsedDomToVTree(dom, childScope, true));
       }
 
       // eval styles
@@ -195,9 +185,7 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
       }
 
       // flatten children
-      children = children.map(function(child) {
-                            return convertParsedDomToVTree(child, scope);
-                          })
+      children = children.map(child => convertParsedDomToVTree(child, scope))
                          .filter(function(v) { return !!v; });
       children = helper.flatten(children);
 

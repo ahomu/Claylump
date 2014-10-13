@@ -1,13 +1,12 @@
 'use strict';
 
-var helper   = require('./helper');
-var template = require('./template');
-var event    = require('./event');
+import helper   from './helper';
+import template from './template';
+import event    from './event';
 
-/**
- * @class ClayElement
- */
-module.exports = {
+var REGISTRY_CLAY_PROTOTYPES = {};
+
+export default {
   /**
    * @static
    * @param {String} name
@@ -16,7 +15,6 @@ module.exports = {
    */
   create: function(name, proto) {
 
-    proto._name = name;
     var defaults = {
       /**
        * @private
@@ -81,8 +79,8 @@ module.exports = {
       use: {}
     };
 
-    // mix claylump implementation
-    helper.mix(helper.mix(proto, defaults), ClayElement.prototype, true);
+    // defaults
+    helper.mix(proto, defaults);
 
     // dom ready required
     helper.ready(function() {
@@ -91,37 +89,51 @@ module.exports = {
     });
 
     // extends element
-    var baseElement, extendedScope;
+    var extendsProto;
     if (proto.extends) {
       // FIXME cannot use `is="x-child"` in `<template>`
 
-      // element instance -> constructor -> create host object
-      baseElement = Object.create(proto._doc.createElement(proto.extends).constructor);
+      if (helper.isCustomElementName(proto.extends) &&
+          (extendsProto = getExtendee(proto.extends))) {
 
-      if (helper.isCustomElementName(proto.extends)) {
         // extends custom element
         // FIXME create baseElements prototype by deeply clone
-        extendedScope   = helper.mix(helper.clone(baseElement.prototype.scope), proto.scope, true);
-        proto           = helper.mix(helper.clone(baseElement.prototype),       proto,       true);
-        proto.scope     = extendedScope;
-        proto.__super__ = baseElement.prototype;
-        baseElement     = HTMLElement;
+        helper.mix(proto.scope, extendsProto.scope);
+        helper.mix(proto      , extendsProto);
+        proto.__super__ = extendsProto;
+        extendsProto    = HTMLElement.prototype;
+
+      } else {
+        extendsProto = Object.create(proto._doc.createElement(proto.extends).constructor).prototype;
       }
 
     } else {
       // new custom element
-      baseElement = HTMLElement;
+      extendsProto = HTMLElement.prototype;
     }
 
-    return helper.mix(Object.create(baseElement.prototype), proto);
+    // register prototype for extends
+    REGISTRY_CLAY_PROTOTYPES[name] = helper.clone(proto);
+
+    // mix claylump implementation
+    helper.mix(proto, ClayElementImpl, true);
+
+    return helper.mix(Object.create(extendsProto), proto);
   }
 };
 
-function ClayElement() {
-  // don't call directly
+function getExtendee(name) {
+  var proto = REGISTRY_CLAY_PROTOTYPES[name];
+  if (!proto) {
+    throw new Error('Could not extends `' + name + '`, because not registered');
+  }
+  return proto;
 }
 
-helper.mix(ClayElement.prototype, {
+/**
+ * @implements ClayElement
+ */
+var ClayElementImpl = {
   /**
    * inject utility with element instance
    *
@@ -190,9 +202,7 @@ helper.mix(ClayElement.prototype, {
    */
   closestOf: function(el, selector) {
     if (helper.isArray(el)) {
-      return el.map(function(e) {
-        return this.closestOf(e, selector);
-      }.bind(this));
+      return el.map(e => this.closestOf(e, selector));
     }
 
     var current = /** @type {Element} */ el.parentNode;
@@ -294,4 +304,4 @@ helper.mix(ClayElement.prototype, {
       throw new Error('Does not exists method in super element specified: ' + superMethod);
     }
   }
-});
+};

@@ -2,8 +2,8 @@
 
 describe 'ClayEvent', ->
 
-  event  = Claylump.Event
-  el = null
+  event = Claylump.Event
+  el    = null
 
   beforeEach ->
     el = document.createElement 'div'

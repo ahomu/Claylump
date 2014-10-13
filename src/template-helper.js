@@ -1,11 +1,11 @@
 'use strict';
 
-var helper     = require("./helper");
+import helper from "./helper";
 
 /**
  *
  */
-module.exports = {
+export default {
   register: function(name, func) {
     this[name] = func;
   },

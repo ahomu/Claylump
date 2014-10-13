@@ -1,17 +1,14 @@
 'use strict';
 
-var helper     = require("./helper");
-var tmplHelper = require("./template-helper");
-var htmlParser = require("htmlParser");
+import helper     from "./helper";
+import tmplHelper from "./template-helper";
+import * as htmlParser from "htmlParser";
 
 var REX_INTERPOLATE_SYMBOL = /{{[^{}]+}}/g,
     REX_REPEAT_SYMBOL      = /{{(\w+)\sin\s([\w\.]+)}}/,
     STR_REPEAT_ATTRIBUTE   = 'cl-repeat';
 
-/**
- * @class ClayTemplateCompiler
- */
-module.exports = {
+export default {
   /**
    * @static
    * @param {String} html
@@ -23,40 +20,43 @@ module.exports = {
 };
 
 /**
- * @param {String} html
- * @constructor
+ * @class ClayTemplateCompiler
  */
-function ClayTemplateCompiler(html) {
-  var handler = new htmlParser.DefaultHandler(function (err, dom) {
-        if (err) {
-          console.error(err);
-        }
-      }, {
-        enforceEmptyTags : true,
-        ignoreWhitespace : true,
-        verbose          : false
-      }),
-      parser = new htmlParser.Parser(handler);
+class ClayTemplateCompiler {
+  /**
+   * @param {String} html
+   * @constructor
+   */
+  constructor(html) {
+    var handler = new htmlParser.DefaultHandler(function (err, dom) {
+          if (err) {
+            console.error(err);
+          }
+        }, {
+          enforceEmptyTags : true,
+          ignoreWhitespace : true,
+          verbose          : false
+        }),
+        parser = new htmlParser.Parser(handler);
 
-  // parse html
-  parser.parseComplete(html);
-  if (handler.dom.length > 1) {
-    throw Error('Template must have exactly one root element. was: ' + html);
+    // parse html
+    parser.parseComplete(html);
+    if (handler.dom.length > 1) {
+      throw Error('Template must have exactly one root element. was: ' + html);
+    }
+
+    // compile
+    this.structure = compileDomStructure(handler.dom[0]);
   }
 
-  // compile
-  this.structure = compileDomStructure(handler.dom[0]);
-}
-
-helper.mix(ClayTemplateCompiler.prototype, {
   /**
-   @typedef {Object} DomStructure
-   @property {?String} data
-   @property {Object.<string, string>} attribs
-   @property {String} style
-   @property {Object.<string, function>} hooks
-   @property {TplEvaluators} evaluators
-   @property {Array.<DomStructure>} children
+   * @typedef {Object} DomStructure
+   * @property {?String} data
+   * @property {Object.<string, string>} attribs
+   * @property {String} style
+   * @property {Object.<string, function>} hooks
+   * @property {TplEvaluators} evaluators
+   * @property {Array.<DomStructure>} children
    */
 
   /**
@@ -69,25 +69,23 @@ helper.mix(ClayTemplateCompiler.prototype, {
 
   /**
    * parsed DOM structure
-   * @property {DomStructure}
+   * @property {DomStructure} structure
    */
-  structure: {},
 
   /**
    *
    * @returns {DomStructure}
    */
-  getCompiled: function() {
+  getCompiled() {
     return this.structure;
   }
-});
+}
 
 /**
  * @destructive
  * @param {Object} domStructure
  */
-function compileDomStructure(domStructure) {
-  domStructure = domStructure || {};
+function compileDomStructure(domStructure = {}) {
   var data     = domStructure.data,
       attrs    = domStructure.attribs    || {},
       children = domStructure.children   || [],
@@ -195,13 +193,16 @@ function compileRepeatExpression(repeatExpr) {
  * @param {Function} fn
  * @constructor
  */
-function HookWrapper(fn) {
-  this.fn = fn
-}
+class HookWrapper {
 
-HookWrapper.prototype.hook = function () {
-  this.fn.apply(this, arguments)
-};
+  constructor(fn) {
+    this.fn = fn
+  }
+
+  hook() {
+    this.fn.apply(this, arguments)
+  }
+}
 
 /**
  * @param {Function} fn

@@ -1,16 +1,30 @@
 module.exports = (grunt) ->
+
+  require('load-grunt-tasks')(grunt)
+
   grunt.initConfig
 
     pkg: grunt.file.readJSON 'package.json'
 
     # Build
-    browserify:
+    '6to5':
+      options:
+        sourceMap: false
       dist:
-        src  : 'index.js'
-        dest : 'dist/claylump.js'
-        options:
-          browserifyOptions:
-            debug : true
+        files: [{
+          expand : true
+          cwd    : './src'
+          src    : ['**/*.js']
+          dest   : 'dist/temp/'
+        }]
+
+    browserify:
+        dist:
+          src  : 'dist/temp/_index.js'
+          dest : 'dist/claylump.js'
+          options:
+            browserifyOptions:
+              debug : true
 
     uglify:
       dist:
@@ -40,17 +54,10 @@ module.exports = (grunt) ->
 
     watch:
       files: [
-        'index.js'
         'src/**/*.js'
       ]
-      tasks: ['browserify']
+      tasks: ['6to5', 'browserify']
 
-  grunt.loadNpmTasks 'grunt-browserify'
-  grunt.loadNpmTasks 'grunt-espower'
-  grunt.loadNpmTasks 'grunt-contrib-watch'
-  grunt.loadNpmTasks 'grunt-contrib-coffee'
-  grunt.loadNpmTasks 'grunt-contrib-uglify'
-
-  grunt.registerTask 'build',   ['browserify', 'uglify']
+  grunt.registerTask 'build',   ['6to5', 'browserify', 'uglify']
   grunt.registerTask 'pretest', ['coffee', 'espower']
   grunt.registerTask 'default', ['watch']

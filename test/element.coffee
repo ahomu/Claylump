@@ -49,13 +49,13 @@ describe 'ClayElement', ->
       assert extendedProto.scope.baz == 'qux'
 
     it 'traversal <template> & parse html', (done)->
-      (load 'test/fixture/element/template_test.html').onload = ->
+      (load '/test/fixture/element/template_test.html').onload = ->
         el = Object.create document.createElement('x-template-test').constructor
         assert el.prototype._html == '<h1>Hello World</h1>'
         done()
 
     it 'attached set `root` & `template`', (done)->
-      (load 'test/fixture/element/template_test.html').onload = ->
+      (load '/test/fixture/element/template_test.html').onload = ->
         el = document.createElement 'x-template-test'
         document.body.appendChild el
 
@@ -197,7 +197,7 @@ describe 'ClayElement', ->
   describe 'element traversal helper', ->
 
     it '`find` one return element', (done)->
-      (load 'test/fixture/element/traversal_test.html').onload = ->
+      (load '/test/fixture/element/traversal_test.html').onload = ->
         el = document.createElement 'x-traversal-test'
         document.body.appendChild el
         found = el.find '#ury'
@@ -208,7 +208,7 @@ describe 'ClayElement', ->
         done()
 
     it '`find` some return array', (done)->
-      (load 'test/fixture/element/traversal_test.html').onload = ->
+      (load '/test/fixture/element/traversal_test.html').onload = ->
         el = document.createElement 'x-traversal-test'
         document.body.appendChild el
         found = el.find 'li'
@@ -219,7 +219,7 @@ describe 'ClayElement', ->
         done()
 
     it '`closestOf` traverse parent', (done)->
-      (load 'test/fixture/element/traversal_test.html').onload = ->
+      (load '/test/fixture/element/traversal_test.html').onload = ->
         el = document.createElement 'x-traversal-test'
         document.body.appendChild el
 
@@ -242,7 +242,7 @@ describe 'ClayElement', ->
         done()
 
     it '`closestOf` traverse fail', (done)->
-      (load 'test/fixture/element/traversal_test.html').onload = ->
+      (load '/test/fixture/element/traversal_test.html').onload = ->
         el = document.createElement 'x-traversal-test'
         document.body.appendChild el
 
