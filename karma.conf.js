@@ -4,7 +4,7 @@ module.exports = function(config) {
     frameworks: ['mocha'],
     files: [
       {
-       pattern: './bower_components/platform/platform.js',
+       pattern: './bower_components/webcomponents.js/webcomponents.js',
        watched: false, included: true, served: false
       },
       {

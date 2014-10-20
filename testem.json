@@ -1,6 +1,6 @@
 {
   "framework": [
-    "/bower_components/platform/platform.js",
+    "/bower_components/webcomponents.js/webcomponents.js",
     "/node_modules/mocha/mocha.js",
     "http://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.7.3/sinon-min.js",
     "/bower_components/power-assert/build/power-assert.js"
@@ -16,6 +16,6 @@
     "test/temp/*.js"
   ],
   "test_page": "test/runner.mustache",
-  "launch_in_dev": ["Chrome"],
+  "launch_in_dev": ["Chrome", "Firefox"],
   "launch_in_ci": ["Chrome"]
 }
