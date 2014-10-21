@@ -1,6 +1,5 @@
 {
   "framework": [
-    "/bower_components/webcomponents.js/webcomponents.js",
     "/node_modules/mocha/mocha.js",
     "http://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.7.3/sinon-min.js",
     "/bower_components/power-assert/build/power-assert.js"
@@ -8,10 +7,14 @@
   "before_tests": "grunt pretest",
   "on_exit": "rm -rf ./test/temp",
   "src_files": [
+    "dist/claylump.polyfill.js",
+    "dist/claylump.runtime.js",
     "dist/claylump.js",
     "test/*.coffee"
   ],
   "serve_files": [
+    "dist/claylump.polyfill.js",
+    "dist/claylump.runtime.js",
     "dist/claylump.js",
     "test/temp/*.js"
   ],

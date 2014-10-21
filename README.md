@@ -68,9 +68,7 @@ wip...
 
 ## TODO
 
-- [x] event delegation
 - [ ] add pub/sub event
-- [x] implement `ClayElement#find(selector)`, `ClayElement#closestOf(element, parentSelector)`
 - [ ] http module
 - [ ] build platform.js
 - [ ] scope observer

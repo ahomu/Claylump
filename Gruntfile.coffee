@@ -19,26 +19,36 @@ module.exports = (grunt) ->
         }]
 
     browserify:
-        dist:
-          src  : 'dist/temp/_index.js'
-          dest : 'dist/claylump.js'
-          options:
-            browserifyOptions:
-              debug : true
-        runtime:
-          src  : 'dist/temp/_runtime.js'
-          dest : 'dist/claylump.runtime.js'
-          options:
-            browserifyOptions:
-              debug : true
+      dist:
+        src  : 'dist/temp/_index.js'
+        dest : 'dist/claylump.js'
+        options:
+          browserifyOptions:
+            debug : true
+      runtime:
+        src  : 'dist/temp/_runtime.js'
+        dest : 'dist/claylump.runtime.js'
+        options:
+          browserifyOptions:
+            debug : true
+      polyfill:
+        src  : 'dist/temp/_polyfill.js'
+        dest : 'dist/claylump.polyfill.js'
+        options:
+          transform:
+            ['debowerify']
+          browserifyOptions:
+            debug : true
 
     uglify:
       dist:
         options:
+          preserveComments: 'some'
           banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */'
         files:
           'dist/claylump.min.js': 'dist/claylump.js'
           'dist/claylump.runtime.min.js': 'dist/claylump.runtime.js'
+          'dist/claylump.polyfill.min.js': 'dist/claylump.polyfill.js'
 
     # Test
     coffee:
