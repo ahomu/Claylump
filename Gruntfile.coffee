@@ -25,6 +25,12 @@ module.exports = (grunt) ->
           options:
             browserifyOptions:
               debug : true
+        runtime:
+          src  : 'dist/temp/_runtime.js'
+          dest : 'dist/claylump.runtime.js'
+          options:
+            browserifyOptions:
+              debug : true
 
     uglify:
       dist:
@@ -32,6 +38,7 @@ module.exports = (grunt) ->
           banner: '/*! <%= pkg.name %> - v<%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */'
         files:
           'dist/claylump.min.js': 'dist/claylump.js'
+          'dist/claylump.runtime.min.js': 'dist/claylump.runtime.js'
 
     # Test
     coffee:

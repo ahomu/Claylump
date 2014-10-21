@@ -6,7 +6,6 @@ import * as patch   from 'virtual-dom/patch';
 import * as create  from 'virtual-dom/create-element';
 
 import helper       from "./helper";
-import tmplCompiler from "./template-compiler";
 import tmplHelper   from "./template-helper";
 
 window.requestAnimationFrame  = window.requestAnimationFrame ||
@@ -44,8 +43,6 @@ class ClayTemplate {
 
     this.scope    = scope;
 
-    // TODO separate compile process
-    var compiler   = tmplCompiler.create();
     try {
       this.compiled = JSON.parse(html, function(key, val) {
         if ((val || {})[STR_EVAL_FUNCTION_SYMBOL]) {
@@ -54,6 +51,10 @@ class ClayTemplate {
         return val;
       });
     } catch(e) {
+      if (!window.ClayRuntime) {
+        throw new Error('Require runtime library for template compiling');
+      }
+      var compiler = window.ClayRuntime.compiler.create();
       this.compiled = compiler.compileFromHtml(html);
     }
   }
