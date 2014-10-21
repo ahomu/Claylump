@@ -156,6 +156,24 @@ function isCustomElementName(localName) {
 }
 
 /**
+ * @see http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible/13931627#13931627
+ * @param {Function} constructor
+ * @param {Array} args
+ * @returns {invoke.F}
+ */
+function invoke(constructor, args) {
+  var f;
+  function F() {
+    // constructor returns **this**
+    return constructor.apply(this, args);
+  }
+  F.prototype = constructor.prototype;
+  f = new F();
+  f.constructor = constructor;
+  return f;
+}
+
+/**
  * @param {Function} handler
  */
 function ready(handler) {
@@ -184,6 +202,7 @@ export default {
   clone     : clone,
   flatten   : flatten,
   ready     : ready,
+  invoke    : invoke,
   toArray   : toArray,
   toString  : toString,
 
@@ -193,5 +212,6 @@ export default {
   isNumber            : isNumber,
   isArray             : isArray,
   isFunction          : isFunction,
+  isObject            : isObject,
   isCustomElementName : isCustomElementName
 };

@@ -1,21 +1,20 @@
 'use strict';
 
 import helper     from "./helper";
-import tmplHelper from "./template-helper";
 import * as htmlParser from "htmlParser";
 
-var REX_INTERPOLATE_SYMBOL = /{{[^{}]+}}/g,
-    REX_REPEAT_SYMBOL      = /{{(\w+)\sin\s([\w\.]+)}}/,
-    STR_REPEAT_ATTRIBUTE   = 'cl-repeat';
+var REX_INTERPOLATE_SYMBOL = /{{[^{}]+}}/g;
+var REX_REPEAT_SYMBOL      = /{{(\w+)\sin\s([\w\.]+)}}/;
+var STR_REPEAT_ATTRIBUTE   = 'cl-repeat';
+var STR_EVAL_FUNCTION_SYMBOL = '__EVAL_FUNCTION__';
 
 export default {
   /**
    * @static
-   * @param {String} html
    * @returns {ClayTemplateCompiler}
    */
-  create: function(html) {
-    return new ClayTemplateCompiler(html);
+  create: function() {
+    return new ClayTemplateCompiler();
   }
 };
 
@@ -24,29 +23,10 @@ export default {
  */
 class ClayTemplateCompiler {
   /**
-   * @param {String} html
    * @constructor
    */
-  constructor(html) {
-    var handler = new htmlParser.DefaultHandler(function (err, dom) {
-          if (err) {
-            console.error(err);
-          }
-        }, {
-          enforceEmptyTags : true,
-          ignoreWhitespace : true,
-          verbose          : false
-        }),
-        parser = new htmlParser.Parser(handler);
-
-    // parse html
-    parser.parseComplete(html);
-    if (handler.dom.length > 1) {
-      throw Error('Template must have exactly one root element. was: ' + html);
-    }
-
-    // compile
-    this.structure = compileDomStructure(handler.dom[0]);
+  constructor() {
+    // noop
   }
 
   /**
@@ -54,7 +34,6 @@ class ClayTemplateCompiler {
    * @property {?String} data
    * @property {Object.<string, string>} attribs
    * @property {String} style
-   * @property {Object.<string, function>} hooks
    * @property {TplEvaluators} evaluators
    * @property {Array.<DomStructure>} children
    */
@@ -67,17 +46,44 @@ class ClayTemplateCompiler {
    * @property {?Function} repeat
    */
 
-  /**
-   * parsed DOM structure
-   * @property {DomStructure} structure
-   */
 
   /**
-   *
+   * @param {String} html
    * @returns {DomStructure}
    */
-  getCompiled() {
-    return this.structure;
+  compileFromHtml(html) {
+    var parsed = this.parseHtml(html);
+    return compileDomStructure(parsed);
+  }
+
+  /**
+   * @param {String} html
+   * @returns {String}
+   */
+  serializeFromHtml(html) {
+    var parsed = this.parseHtml(html);
+    return JSON.stringify(compileDomStructure(parsed, true));
+  }
+
+  parseHtml(html) {
+    var handler = new htmlParser.DefaultHandler(function (err, dom) {
+        if (err) {
+          console.error(err);
+        }
+      }, {
+        enforceEmptyTags : true,
+        ignoreWhitespace : true,
+        verbose          : false
+      }),
+      parser = new htmlParser.Parser(handler);
+
+    // parse html
+    parser.parseComplete(html);
+    if (handler.dom.length > 1) {
+      throw Error('Template must have exactly one root element. was: ' + html);
+    }
+
+    return handler.dom[0];
   }
 }
 
@@ -85,11 +91,10 @@ class ClayTemplateCompiler {
  * @destructive
  * @param {Object} domStructure
  */
-function compileDomStructure(domStructure = {}) {
+function compileDomStructure(domStructure = {}, preCompile = false) {
   var data     = domStructure.data,
       attrs    = domStructure.attribs    || {},
       children = domStructure.children   || [],
-      hooks    = domStructure.hooks      = {},
       evals    = domStructure.evaluators = {
         attrs  : {},
         style  : null,
@@ -101,34 +106,30 @@ function compileDomStructure(domStructure = {}) {
   // styles evaluator
   if (attrs.style) {
     domStructure.style = attrs.style;
-    evals.style = compileValue(domStructure.style);
+    evals.style = compileValue(domStructure.style, preCompile);
     delete attrs.style;  // delete from orig attrib object
   }
 
-  // attributes evaluator & hook
+  // attributes evaluator
   keys = Object.keys(attrs);
   while ((key = keys[i++])) {
-    // hook
-    if (tmplHelper[key]) {
-      hooks[key] = hook(tmplHelper[key]);
-    }
     // repeat
-    else if (key === STR_REPEAT_ATTRIBUTE) {
-      evals.repeat = compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE]);
+    if (key === STR_REPEAT_ATTRIBUTE) {
+      evals.repeat = compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE], preCompile);
       delete attrs[STR_REPEAT_ATTRIBUTE]; // delete from orig attrib object
     }
     // interpolate
     else {
-      evals.attrs[key] = compileValue(attrs[key]);
+      evals.attrs[key] = compileValue(attrs[key], preCompile);
     }
   }
 
   // data (text) evaluator
-  evals.data = compileValue(data);
+  evals.data = compileValue(data, preCompile);
 
   // recursive
   children.forEach(function(child) {
-    compileDomStructure(child);
+    compileDomStructure(child, preCompile);
   });
 
   return domStructure
@@ -138,7 +139,7 @@ function compileDomStructure(domStructure = {}) {
  * @param {String} str
  * @returns {?Function}
  */
-function compileValue(str) {
+function compileValue(str, preCompile) {
   str = (str || '');
   var matches = str.match(REX_INTERPOLATE_SYMBOL);
 
@@ -146,23 +147,26 @@ function compileValue(str) {
     return null;
   }
 
-  return new Function('data',[
-    "var s=[];",
-    "s.push('",
-    str.replace(/[\r\n\t]/g, ' ')
-       .split("'").join("\\'")
-       .replace(/{{([^{}]+)}}/g, "',(data.$1 != null ? data.$1 : ''),'")
-       .split(/\s{2,}/).join(' '),
-    "');",
-    "return s.join('');"
-  ].join(''));
+  var funcObj = {
+    [STR_EVAL_FUNCTION_SYMBOL]: true,
+    args : ['data', ["var s=[];",
+      "s.push('",
+      str.replace(/[\r\n\t]/g, ' ')
+        .split("'").join("\\'")
+        .replace(/{{([^{}]+)}}/g, "',(data.$1 != null ? data.$1 : ''),'")
+        .split(/\s{2,}/).join(' '),
+      "');",
+      "return s.join('');"
+    ].join('')]
+  };
+  return preCompile ? funcObj : helper.invoke(Function, funcObj.args);
 }
 
 /**
  * @param {String} repeatExpr
  * @returns {Function}
  */
-function compileRepeatExpression(repeatExpr) {
+function compileRepeatExpression(repeatExpr, preCompile) {
   var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL),
       parentTargetPath,
       childScopeName;
@@ -174,41 +178,19 @@ function compileRepeatExpression(repeatExpr) {
   parentTargetPath = matches[2];
   childScopeName   = matches[1];
 
-  return new Function('data', [
-    "return data." + parentTargetPath + ".map(function(item) {",
-    "  var ks, k, i = 0, r = {};",
-    "  ks = Object.keys(data);",
-    "  while ((k = ks[i++])) {",
-    "    r[k] = data[k];",
-    "  }",
-    "  r." + childScopeName + " = item;",
-    "  return r;",
-    "});"
-  ].join(''));
-}
-
-/**
- * hook class
- * @class HookWrapper
- * @param {Function} fn
- * @constructor
- */
-class HookWrapper {
-
-  constructor(fn) {
-    this.fn = fn
-  }
-
-  hook() {
-    this.fn.apply(this, arguments)
-  }
-}
-
-/**
- * @param {Function} fn
- * @returns {HookWrapper}
- * @constructor
- */
-function hook(fn) {
-  return new HookWrapper(fn)
+  var funcObj = {
+    [STR_EVAL_FUNCTION_SYMBOL]: true,
+    args : ['data', [
+      "return data." + parentTargetPath + ".map(function(item) {",
+      "  var ks, k, i = 0, r = {};",
+      "  ks = Object.keys(data);",
+      "  while ((k = ks[i++])) {",
+      "    r[k] = data[k];",
+      "  }",
+        "  r." + childScopeName + " = item;",
+      "  return r;",
+      "});"
+    ].join('')]
+  };
+  return preCompile ? funcObj : helper.invoke(Function, funcObj.args);
 }

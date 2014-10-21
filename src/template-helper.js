@@ -9,7 +9,8 @@ export default {
   register: function(name, func) {
     this[name] = func;
   },
-  hook: function(el) {
+  hook: function hook(el) {
+    console.log(arguments);
     console.log('hook', el);
   }
 };

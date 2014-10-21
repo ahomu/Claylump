@@ -1,15 +1,19 @@
 'use strict';
 
-import * as h            from 'virtual-dom/h';
-import * as diff         from 'virtual-dom/diff';
-import * as patch        from 'virtual-dom/patch';
+import * as h       from 'virtual-dom/h';
+import * as diff    from 'virtual-dom/diff';
+import * as patch   from 'virtual-dom/patch';
+import * as create  from 'virtual-dom/create-element';
+
 import helper       from "./helper";
 import tmplCompiler from "./template-compiler";
-import * as create       from 'virtual-dom/create-element';
+import tmplHelper   from "./template-helper";
 
 window.requestAnimationFrame  = window.requestAnimationFrame ||
                                 window.mozRequestAnimationFrame ||
                                 window.webkitRequestAnimationFrame;
+
+var STR_EVAL_FUNCTION_SYMBOL = '__EVAL_FUNCTION__';
 
 export default {
   /**
@@ -39,7 +43,19 @@ class ClayTemplate {
     this._invalidated = false;
 
     this.scope    = scope;
-    this.compiled = tmplCompiler.create(html).getCompiled();
+
+    // TODO separate compile process
+    var compiler   = tmplCompiler.create();
+    try {
+      this.compiled = JSON.parse(html, function(key, val) {
+        if ((val || {})[STR_EVAL_FUNCTION_SYMBOL]) {
+          return helper.invoke(Function, val.args);
+        }
+        return val;
+      });
+    } catch(e) {
+      this.compiled = compiler.compileFromHtml(html);
+    }
   }
 
   /**
@@ -139,7 +155,7 @@ class ClayTemplate {
   destroy() {
     this.scope = this.compiled = null;
   }
-};
+}
 
 /**
  * convert to VirtualNode from DomStructure
@@ -159,7 +175,7 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
       evals    = dom.evaluators,
       attrs    = {},
       style    = {},
-      hooks    = dom.hooks,
+      hooks    = {},
       keys, key, i = 0;
 
   switch(type) {
@@ -174,14 +190,19 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
       if (orgStyle) {
         style = evals.style ? evals.style(scope)
                             : orgStyle;
+        console.log('' + evals.style);
         style = convertCssStringToObject(style);
       }
 
       // eval attributes
       keys = Object.keys(orgAttrs);
       while ((key = keys[i++])) {
-        attrs[key] = evals.attrs[key] ? evals.attrs[key](scope)
-                                      : orgAttrs[key];
+        if (tmplHelper[key]) {
+          hooks[key] = hook(tmplHelper[key]); // TODO enhancement
+        } else {
+          attrs[key] = evals.attrs[key] ? evals.attrs[key](scope)
+                                        : orgAttrs[key];
+        }
       }
 
       // flatten children
@@ -212,6 +233,7 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
  * @returns {Object}
  */
 function convertCssStringToObject(cssStr) {
+  console.log(cssStr);
   var cssStrings = cssStr.replace(/\s/g, '').split(';'),
       retStyle   = {},
       i = 0, prop_value;
@@ -222,4 +244,30 @@ function convertCssStringToObject(cssStr) {
   }
 
   return retStyle;
+}
+
+/**
+ * hook class
+ * @class HookWrapper
+ * @param {Function} fn
+ * @constructor
+ */
+class HookWrapper {
+
+  constructor(fn) {
+    this.fn = fn
+  }
+
+  hook() {
+    this.fn.apply(this, arguments)
+  }
+}
+
+/**
+ * @param {Function} fn
+ * @returns {HookWrapper}
+ * @constructor
+ */
+function hook(fn) {
+  return new HookWrapper(fn)
 }
