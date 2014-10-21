@@ -10,7 +10,5 @@ export default {
     this[name] = func;
   },
   hook: function hook(el) {
-    console.log(arguments);
-    console.log('hook', el);
   }
 };

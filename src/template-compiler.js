@@ -53,7 +53,8 @@ class ClayTemplateCompiler {
    */
   compileFromHtml(html) {
     var parsed = this.parseHtml(html);
-    return compileDomStructure(parsed);
+    this.preCompile = false;
+    return this.compileDomStructure(parsed);
   }
 
   /**
@@ -62,7 +63,8 @@ class ClayTemplateCompiler {
    */
   serializeFromHtml(html) {
     var parsed = this.parseHtml(html);
-    return JSON.stringify(compileDomStructure(parsed, true));
+    this.preCompile = true;
+    return JSON.stringify(this.compileDomStructure(parsed));
   }
 
   parseHtml(html) {
@@ -85,112 +87,112 @@ class ClayTemplateCompiler {
 
     return handler.dom[0];
   }
-}
 
-/**
- * @destructive
- * @param {Object} domStructure
- */
-function compileDomStructure(domStructure = {}, preCompile = false) {
-  var data     = domStructure.data,
-      attrs    = domStructure.attribs    || {},
-      children = domStructure.children   || [],
-      evals    = domStructure.evaluators = {
-        attrs  : {},
-        style  : null,
-        data   : null,
-        repeat : null
-      },
-      keys, key, i = 0;
 
-  // styles evaluator
-  if (attrs.style) {
-    domStructure.style = attrs.style;
-    evals.style = compileValue(domStructure.style, preCompile);
-    delete attrs.style;  // delete from orig attrib object
-  }
+  /**
+   * @destructive
+   * @param {Object} domStructure
+   */
+  compileDomStructure(domStructure = {}) {
+    var data     = domStructure.data,
+        attrs    = domStructure.attribs    || {},
+        children = domStructure.children   || [],
+        evals    = domStructure.evaluators = {
+          attrs  : {},
+          style  : null,
+          data   : null,
+          repeat : null
+        },
+        keys, key, i = 0;
 
-  // attributes evaluator
-  keys = Object.keys(attrs);
-  while ((key = keys[i++])) {
-    // repeat
-    if (key === STR_REPEAT_ATTRIBUTE) {
-      evals.repeat = compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE], preCompile);
-      delete attrs[STR_REPEAT_ATTRIBUTE]; // delete from orig attrib object
+    // styles evaluator
+    if (attrs.style) {
+      domStructure.style = attrs.style;
+      evals.style = this.compileValue(domStructure.style);
+      delete attrs.style;  // delete from orig attrib object
     }
-    // interpolate
-    else {
-      evals.attrs[key] = compileValue(attrs[key], preCompile);
+
+    // attributes evaluator
+    keys = Object.keys(attrs);
+    while ((key = keys[i++])) {
+      // repeat
+      if (key === STR_REPEAT_ATTRIBUTE) {
+        evals.repeat = this.compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE]);
+        delete attrs[STR_REPEAT_ATTRIBUTE]; // delete from orig attrib object
+      }
+      // interpolate
+      else {
+        evals.attrs[key] = this.compileValue(attrs[key]);
+      }
     }
+
+    // data (text) evaluator
+    evals.data = this.compileValue(data);
+
+    // recursive
+    children.forEach(child => this.compileDomStructure(child));
+
+    return domStructure
   }
 
-  // data (text) evaluator
-  evals.data = compileValue(data, preCompile);
+  /**
+   * @param {String} str
+   * @returns {?Function}
+   */
+  compileValue(str) {
+    str = (str || '');
+    var matches = str.match(REX_INTERPOLATE_SYMBOL);
 
-  // recursive
-  children.forEach(function(child) {
-    compileDomStructure(child, preCompile);
-  });
+    if (matches === null) {
+      return null;
+    }
 
-  return domStructure
-}
-
-/**
- * @param {String} str
- * @returns {?Function}
- */
-function compileValue(str, preCompile) {
-  str = (str || '');
-  var matches = str.match(REX_INTERPOLATE_SYMBOL);
-
-  if (matches === null) {
-    return null;
+    var funcObj = {
+      [STR_EVAL_FUNCTION_SYMBOL]: true,
+      args : ['data', ["var s=[];",
+        "s.push('",
+        str.replace(/[\r\n\t]/g, ' ')
+          .split("'").join("\\'")
+          .replace(/{{([^{}]+)}}/g, "',(data.$1 != null ? data.$1 : ''),'")
+          .split(/\s{2,}/).join(' '),
+        "');",
+        "return s.join('');"
+      ].join('')]
+    };
+    return this.preCompile ? funcObj : helper.invoke(Function, funcObj.args);
   }
 
-  var funcObj = {
-    [STR_EVAL_FUNCTION_SYMBOL]: true,
-    args : ['data', ["var s=[];",
-      "s.push('",
-      str.replace(/[\r\n\t]/g, ' ')
-        .split("'").join("\\'")
-        .replace(/{{([^{}]+)}}/g, "',(data.$1 != null ? data.$1 : ''),'")
-        .split(/\s{2,}/).join(' '),
-      "');",
-      "return s.join('');"
-    ].join('')]
-  };
-  return preCompile ? funcObj : helper.invoke(Function, funcObj.args);
-}
-
-/**
- * @param {String} repeatExpr
- * @returns {Function}
- */
-function compileRepeatExpression(repeatExpr, preCompile) {
-  var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL),
+  /**
+   * @param {String} repeatExpr
+   * @returns {Function}
+   */
+  compileRepeatExpression(repeatExpr) {
+    var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL),
       parentTargetPath,
       childScopeName;
 
-  if (matches === null) {
-    throw new Error('Unexpected syntax for repeat: ' + repeatExpr)
+    if (matches === null) {
+      throw new Error('Unexpected syntax for repeat: ' + repeatExpr)
+    }
+
+    parentTargetPath = matches[2];
+    childScopeName   = matches[1];
+
+    var funcObj = {
+      [STR_EVAL_FUNCTION_SYMBOL]: true,
+      args : ['data', [
+          "return data." + parentTargetPath + ".map(function(item) {",
+        "  var ks, k, i = 0, r = {};",
+        "  ks = Object.keys(data);",
+        "  while ((k = ks[i++])) {",
+        "    r[k] = data[k];",
+        "  }",
+          "  r." + childScopeName + " = item;",
+        "  return r;",
+        "});"
+      ].join('')]
+    };
+    return this.preCompile ? funcObj : helper.invoke(Function, funcObj.args);
   }
 
-  parentTargetPath = matches[2];
-  childScopeName   = matches[1];
-
-  var funcObj = {
-    [STR_EVAL_FUNCTION_SYMBOL]: true,
-    args : ['data', [
-      "return data." + parentTargetPath + ".map(function(item) {",
-      "  var ks, k, i = 0, r = {};",
-      "  ks = Object.keys(data);",
-      "  while ((k = ks[i++])) {",
-      "    r[k] = data[k];",
-      "  }",
-        "  r." + childScopeName + " = item;",
-      "  return r;",
-      "});"
-    ].join('')]
-  };
-  return preCompile ? funcObj : helper.invoke(Function, funcObj.args);
 }

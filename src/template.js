@@ -190,7 +190,6 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
       if (orgStyle) {
         style = evals.style ? evals.style(scope)
                             : orgStyle;
-        console.log('' + evals.style);
         style = convertCssStringToObject(style);
       }
 
@@ -233,7 +232,6 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
  * @returns {Object}
  */
 function convertCssStringToObject(cssStr) {
-  console.log(cssStr);
   var cssStrings = cssStr.replace(/\s/g, '').split(';'),
       retStyle   = {},
       i = 0, prop_value;
