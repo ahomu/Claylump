@@ -168,15 +168,14 @@ class ClayTemplateCompiler {
    */
   compileRepeatExpression(repeatExpr) {
     var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL),
-      parentTargetPath,
-      childScopeName;
+        parentTargetPath,
+        childScopeName;
 
     if (matches === null) {
       throw new Error('Unexpected syntax for repeat: ' + repeatExpr)
     }
 
-    parentTargetPath = matches[2];
-    childScopeName   = matches[1];
+    [, childScopeName, parentTargetPath] = matches;
 
     var funcObj = {
       [STR_EVAL_FUNCTION_SYMBOL]: true,

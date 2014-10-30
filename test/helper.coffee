@@ -2,7 +2,7 @@
 
 describe 'ClayTemplate-Helper', ->
 
-  helper = Claylump.Helper
+  helper = Claylump.helper
 
   describe 'mix', ->
 
@@ -124,7 +124,7 @@ describe 'ClayTemplate-Helper', ->
       assert helper.toString(undefined) == 'Undefined'
 
     it 'from original data', ->
-      clayTplInstance = Claylump.Template.create '<div></div>', {}
+      clayTplInstance = Claylump.template.create '<div></div>', {}
       assert helper.toString(clayTplInstance) == 'Object'
 
   describe 'toArray', ->

@@ -2,7 +2,9 @@
 
 import helper   from './helper';
 import template from './template';
-import event    from './event';
+
+import modEvent from './modules/event';
+import modHttp  from './modules/http';
 
 var REGISTRY_CLAY_PROTOTYPES = {};
 
@@ -69,11 +71,6 @@ export default {
       scope : {},
 
       /**
-       * @property {Object.<string, (string|function)>} events
-       */
-      events: {},
-
-      /**
        * @property {Object.<string, function>} use
        */
       use: {}
@@ -81,6 +78,10 @@ export default {
 
     // defaults
     helper.mix(proto, defaults);
+    helper.mix(proto.use, {
+      http  : modHttp,
+      event : modEvent
+    });
 
     // dom ready required
     helper.ready(function() {
@@ -99,6 +100,7 @@ export default {
         // extends custom element
         // FIXME create baseElements prototype by deeply clone
         helper.mix(proto.scope, extendsProto.scope);
+        helper.mix(proto.use,   extendsProto.use);
         helper.mix(proto      , extendsProto);
         proto.__super__ = extendsProto;
         extendsProto    = HTMLElement.prototype;
@@ -149,8 +151,6 @@ var ClayElementImpl = {
       }
       self[alias] = this.use[alias](this);
     }
-
-    this.use = null;
   },
 
   /**
@@ -236,9 +236,6 @@ var ClayElementImpl = {
     this.shadowRoot.appendChild(this.root);
     this.template.drawLoop(this.root);
 
-    // create events
-    this.events = event.create(this.root, this.events); // TODO
-
     // resolve use injection
     this._injectUseObject();
 
@@ -251,11 +248,11 @@ var ClayElementImpl = {
 
   /**
    * an instance was inserted into the document
-   * enable events & call original attached callback
+   * call original attached callback
    */
   attachedCallback : function() {
-    // event delegation
-    this.events.enable(this);
+
+    this.delegateModulesCallback('attachedCallback');
 
     // original
     this._attached.apply(this, arguments);
@@ -263,11 +260,11 @@ var ClayElementImpl = {
 
   /**
    * an instance was removed from the document
-   * disable events & call original detached callback
+   * call original detached callback
    */
   detachedCallback : function() {
-    // disable event
-    this.events.disable();
+
+    this.delegateModulesCallback('detachedCallback');
 
     // original
     this._detached.apply(this, arguments);
@@ -278,8 +275,26 @@ var ClayElementImpl = {
    * call original attr changed callback
    */
   attributeChangedCallback : function() {
+
     // original
     this._attrChanged.apply(this, arguments);
+  },
+
+  /**
+   *
+   * @param {String} callbackMethod
+   */
+  delegateModulesCallback : function(callbackMethod) {
+    var aliases = Object.keys(this.use),
+        alias, module, callback, i = 0;
+
+    while ((alias = aliases[i++])) {
+      module = this[alias];
+      callback = module[callbackMethod];
+      if (helper.isFunction(callback)) {
+        callback.apply(module, [this]);
+      }
+    }
   },
 
   /**

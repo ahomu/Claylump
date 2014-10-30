@@ -1,18 +1,16 @@
 'use strict';
 
-import helper from './helper';
+import helper from '../helper';
 
 var REX_EVENT_SPRITTER = /\s+/;
 
-export default {
-  /**
-   * @param {Element} el
-   * @param {Object} events
-   * @returns {ClayEvent}
-   */
-  create: function(el, events) {
-    return new ClayEvent(el, events);
-  }
+/**
+ * @param {Element} el
+ * @param {Object} events
+ * @returns {ClayEvent}
+ */
+export default function factory(context) {
+  return new ClayEvent(context.root, context.events || {});
 };
 
 /**
@@ -211,5 +209,13 @@ class ClayEvent {
       this.el.removeEventListener(obj.event, obj.handler, true);
     }
     this.currentHandlers = [];
+  }
+
+  attachedCallback(context) {
+    this.enable(context);
+  }
+
+  detachedCallback(context) {
+    this.disable(context);
   }
 }

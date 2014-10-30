@@ -2,7 +2,7 @@
 
 describe 'ClayElement', ->
 
-  element = Claylump.Element
+  element = Claylump.element
 
   load = (path) ->
     link = document.createElement 'link'
@@ -147,10 +147,10 @@ describe 'ClayElement', ->
             return method: ->
               return ctx
 
-    it 'instance `use` property is null', ->
-      el = document.createElement 'x-inject-test'
-
-      assert el.use == null
+#    it 'instance `use` property is null', ->
+#      el = document.createElement 'x-inject-test'
+#
+#      assert el.use == null
 
     it 'module assign specified alias', ->
       el = document.createElement 'x-inject-test'

@@ -10,13 +10,13 @@
     "dist/claylump.polyfill.js",
     "dist/claylump.runtime.js",
     "dist/claylump.js",
-    "test/*.coffee"
+    "test/**/*.coffee"
   ],
   "serve_files": [
     "dist/claylump.polyfill.js",
     "dist/claylump.runtime.js",
     "dist/claylump.js",
-    "test/temp/*.js"
+    "test/temp/**/*.js"
   ],
   "test_page": "test/runner.mustache",
   "launch_in_dev": ["Chrome", "Firefox"],

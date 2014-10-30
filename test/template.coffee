@@ -2,8 +2,8 @@
 
 describe 'ClayTemplate', ->
 
-  template  = Claylump.Template
-  tplHelper = Claylump.TemplateHelper
+  template  = Claylump.template
+  tplHelper = Claylump.templateHelper
 
   it 'create element', ->
     tpl = template.create '<div><h1>Hello World!</h1></div>'

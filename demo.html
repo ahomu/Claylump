@@ -15,7 +15,7 @@
       </div><!-- .entry-meta -->
     </header><!-- .entry-header -->
 
-    <p hook="true"></p>
+    <p data-hoge="aaa" foo="bar"  hook="true" style="width: 100%"></p>
     <div class="entry-content">
       <p>The <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> has published two documents today:</p>
       <p>
@@ -72,7 +72,6 @@
       'mouseover .js-mouseover': 'onDateMouseOver'
     },
     use: {
-      http: Claylump.modules.http
     },
     onDateMouseOver: function() {
       console.log('mouseover');
@@ -85,7 +84,7 @@
       setTimeout(function() {
         this.scope.acme_feature =  Math.random() + '';
         this.scope.items.push({id: 4, tags: [{i: 0}, {i: 0}, {i: 0}]})
-        this.template.invalidate();
+        this.invalidate();
       }.bind(this), 3000)
     },
     detachedCallback: function() {
