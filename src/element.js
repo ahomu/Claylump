@@ -252,7 +252,7 @@ var ClayElementImpl = {
    */
   attachedCallback : function() {
 
-    this.delegateModulesCallback('attachedCallback');
+    this.delegateModuleCallbacks('attachedCallback');
 
     // original
     this._attached.apply(this, arguments);
@@ -264,7 +264,7 @@ var ClayElementImpl = {
    */
   detachedCallback : function() {
 
-    this.delegateModulesCallback('detachedCallback');
+    this.delegateModuleCallbacks('detachedCallback');
 
     // original
     this._detached.apply(this, arguments);
@@ -284,7 +284,7 @@ var ClayElementImpl = {
    *
    * @param {String} callbackMethod
    */
-  delegateModulesCallback : function(callbackMethod) {
+  delegateModuleCallbacks : function(callbackMethod) {
     var aliases = Object.keys(this.use),
         alias, module, callback, i = 0;
 
