@@ -197,11 +197,11 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
       // eval attributes
       keys = Object.keys(orgAttrs);
       while ((key = keys[i++])) {
+        attrs[key] = evals.attrs[key] ? evals.attrs[key](scope)
+                                      : orgAttrs[key];
+
         if (tmplHelper[key]) {
-          hooks[key] = hook(tmplHelper[key]); // TODO enhancement
-        } else {
-          attrs[key] = evals.attrs[key] ? evals.attrs[key](scope)
-                                        : orgAttrs[key];
+          hooks[key] = hook(tmplHelper[key], attrs[key]); // TODO enhancement
         }
       }
 
@@ -249,24 +249,27 @@ function convertCssStringToObject(cssStr) {
  * hook class
  * @class HookWrapper
  * @param {Function} fn
+ * @param {*} val
  * @constructor
  */
 class HookWrapper {
 
-  constructor(fn) {
-    this.fn = fn
+  constructor(fn, val) {
+    this.fn  = fn;
+    this.val = val;
   }
 
   hook() {
-    this.fn.apply(this, arguments)
+    this.fn.apply(this, [this.val].concat(helper.toArray(arguments)));
   }
 }
 
 /**
  * @param {Function} fn
+ * @param {*} val
  * @returns {HookWrapper}
  * @constructor
  */
-function hook(fn) {
-  return new HookWrapper(fn)
+function hook(fn, val) {
+  return new HookWrapper(fn, val)
 }
