@@ -15,7 +15,8 @@
       </div><!-- .entry-meta -->
     </header><!-- .entry-header -->
 
-    <p data-hoge="aaa" foo="bar"  hook="true" style="width: 100%"></p>
+    <h1 id="bar" cl-if="{{flag}}" class="foo">✌(՞ټ՞✌)</h1>
+
     <div class="entry-content">
       <p>The <a href="http://www.w3.org/2008/webapps/">Web Applications Working Group</a> has published two documents today:</p>
       <p>
@@ -47,6 +48,7 @@
 <script>
   Claylump('hello-world', {
     scope: {
+      flag  : false,
       acme_feature: 'Web Components',
       author: {
         name: 'unknown',
@@ -82,6 +84,7 @@
     attachedCallback: function() {
       console.log('attached');
       setTimeout(function() {
+        this.scope.flag =  true;
         this.scope.acme_feature =  Math.random() + '';
         this.scope.items.push({id: 4, tags: [{i: 0}, {i: 0}, {i: 0}]})
         this.invalidate();

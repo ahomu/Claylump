@@ -6,6 +6,8 @@ import * as htmlParser from "htmlParser";
 var REX_INTERPOLATE_SYMBOL = /{{[^{}]+}}/g;
 var REX_REPEAT_SYMBOL      = /{{(\w+)\sin\s([\w\.]+)}}/;
 var STR_REPEAT_ATTRIBUTE   = 'cl-repeat';
+var STR_IF_ATTRIBUTE       = 'cl-if';
+var STR_UNLESS_ATTRIBUTE   = 'cl-unless';
 var STR_EVAL_FUNCTION_SYMBOL = '__EVAL_FUNCTION__';
 
 export default {
@@ -101,6 +103,8 @@ class ClayTemplateCompiler {
           attrs  : {},
           style  : null,
           data   : null,
+          'if'   : null,
+          unless : null,
           repeat : null
         },
         keys, key, i = 0;
@@ -119,6 +123,16 @@ class ClayTemplateCompiler {
       if (key === STR_REPEAT_ATTRIBUTE) {
         evals.repeat = this.compileRepeatExpression(attrs[STR_REPEAT_ATTRIBUTE]);
         delete attrs[STR_REPEAT_ATTRIBUTE]; // delete from orig attrib object
+      }
+      // if
+      else if (key === STR_IF_ATTRIBUTE) {
+        evals.if = this.compileIfExpression(attrs[STR_IF_ATTRIBUTE]);
+        delete attrs[STR_IF_ATTRIBUTE]; // delete from orig attrib object
+      }
+      // unless
+      else if (key === STR_UNLESS_ATTRIBUTE) {
+        evals.unless = this.compileUnlessExpression(attrs[STR_UNLESS_ATTRIBUTE]);
+        delete attrs[STR_UNLESS_ATTRIBUTE]; // delete from orig attrib object
       }
       // interpolate
       else {
@@ -141,41 +155,48 @@ class ClayTemplateCompiler {
    */
   compileValue(str) {
     str = (str || '');
-    var matches = str.match(REX_INTERPOLATE_SYMBOL);
+    var matches = str.match(REX_INTERPOLATE_SYMBOL),
+        funcBody;
 
     if (matches === null) {
       return null;
     }
 
-    var funcObj = {
-      [STR_EVAL_FUNCTION_SYMBOL]: true,
-      args : ['data', ["var s=[];",
+    if (str === matches[0]) {
+      // return primitive value (for hook)
+      funcBody = 'return data.' + str.slice(2, -2) + ';';
+    } else {
+      // return processed string
+      funcBody = ["var s=[];",
         "s.push('",
         str.replace(/[\r\n\t]/g, ' ')
-          .split("'").join("\\'")
-          .replace(/{{([^{}]+)}}/g, "',(data.$1 != null ? data.$1 : ''),'")
-          .split(/\s{2,}/).join(' '),
+           .split("'").join("\\'")
+           .replace(/{{([^{}]+)}}/g, "',(data.$1 != null ? data.$1 : ''),'")
+           .split(/\s{2,}/).join(' '),
         "');",
         "return s.join('');"
-      ].join('')]
+      ].join('')
+    }
+
+    var funcObj = {
+      [STR_EVAL_FUNCTION_SYMBOL]: true,
+      args : ['data', funcBody]
     };
     return this.preCompile ? funcObj : helper.invoke(Function, funcObj.args);
   }
 
   /**
    * @param {String} repeatExpr
-   * @returns {Function}
+   * @returns {Function|Object}
    */
   compileRepeatExpression(repeatExpr) {
-    var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL),
-        parentTargetPath,
-        childScopeName;
+    var matches = (repeatExpr || '').match(REX_REPEAT_SYMBOL);
 
     if (matches === null) {
       throw new Error('Unexpected syntax for repeat: ' + repeatExpr)
     }
 
-    [, childScopeName, parentTargetPath] = matches;
+    var [, childScopeName, parentTargetPath] = matches;
 
     var funcObj = {
       [STR_EVAL_FUNCTION_SYMBOL]: true,
@@ -194,4 +215,45 @@ class ClayTemplateCompiler {
     return this.preCompile ? funcObj : helper.invoke(Function, funcObj.args);
   }
 
+  /**
+   * @param {String} ifExpr
+   * @returns {Function|Object}
+   */
+  compileIfExpression(ifExpr) {
+    ifExpr = (ifExpr || '');
+    var matches = ifExpr.match(REX_INTERPOLATE_SYMBOL);
+
+    if (matches === null) {
+      return null;
+    }
+
+    var funcObj = {
+      [STR_EVAL_FUNCTION_SYMBOL]: true,
+      // return primitive value
+      args: ['data', 'return data.' + ifExpr.slice(2, -2) + ';']
+    };
+
+    return this.preCompile ? funcObj : helper.invoke(Function, funcObj.args);
+  }
+
+  /**
+   * @param {String} unlessExpr
+   * @returns {Function|Object}
+   */
+  compileUnlessExpression(unlessExpr) {
+    unlessExpr = (unlessExpr || '');
+    var matches = unlessExpr.match(REX_INTERPOLATE_SYMBOL);
+
+    if (matches === null) {
+      return null;
+    }
+
+    var funcObj = {
+      [STR_EVAL_FUNCTION_SYMBOL]: true,
+      // return primitive value
+      args: ['data', 'return data.' + unlessExpr.slice(2, -2) + ';']
+    };
+
+    return this.preCompile ? funcObj : helper.invoke(Function, funcObj.args);
+  }
 }

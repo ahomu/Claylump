@@ -56,10 +56,6 @@ Claylump('x-test', {
 });
 ```
 
-### Scope observer
-
-wip...
-
 ## Dependencies
 
 - [Matt-Esch/virtual-dom](https://github.com/Matt-Esch/virtual-dom)
@@ -68,11 +64,8 @@ wip...
 
 ## TODO
 
-- [ ] add pub/sub event
-- [ ] http module
-- [ ] build platform.js
-- [ ] scope observer
-- [ ] expression support...?
+- [ ] flux module
+- [ ] messaging b/w components
 
 ## Current restriction
 

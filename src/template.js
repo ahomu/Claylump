@@ -182,6 +182,16 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
   switch(type) {
     case 'tag':
 
+      // if detection
+      if (evals.if && !evals.if(scope)) {
+        return null;
+      }
+
+      // unless detection
+      if (evals.unless && evals.unless(scope)) {
+        return null;
+      }
+
       // repeat elements
       if (evals.repeat && !ignoreRepeat) {
         return evals.repeat(scope).map(childScope => convertParsedDomToVTree(dom, childScope, true));
@@ -199,7 +209,6 @@ function convertParsedDomToVTree(dom, scope, ignoreRepeat) {
       while ((key = keys[i++])) {
         attrs[key] = evals.attrs[key] ? evals.attrs[key](scope)
                                       : orgAttrs[key];
-
         if (tmplHelper[key]) {
           hooks[key] = hook(tmplHelper[key], attrs[key]); // TODO enhancement
         }

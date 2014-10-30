@@ -37,12 +37,36 @@ describe 'ClayTemplate', ->
 
     assert el.innerHTML == '<h1 style="width: 320px; height: 240px;">Hello World!</h1>'
 
-  it 'repeat array', ->
+  it '`cl-repeat` iterate item of array', ->
     tpl = template.create '<ul><li cl-repeat="{{item in items}}">{{item}}</li></ul>',
       items: ['foo', 'bar', 'baz']
     el = tpl.createElement()
 
     assert el.innerHTML == '<li>foo</li><li>bar</li><li>baz</li>'
+
+  it '`cl-if` given data is truthy when show, otherwise hide', ->
+    tpl = template.create '<div><div cl-if="{{show}}">Hello World</div><div cl-if="{{hide}}">Goodbye World</div></div>',
+      show: true
+      hide: false
+    el = tpl.createElement()
+    assert el.innerHTML == '<div>Hello World</div>'
+
+    tpl = template.create '<div cl-if="{{flag}}">Hello World</div>',
+      flag: false
+    el = tpl.createElement()
+    assert el == null
+
+  it '`cl-unless` given data is falsy when show, otherwise hide', ->
+    tpl = template.create '<div><div cl-unless="{{show}}">Hello World</div><div cl-unless="{{hide}}">Goodbye World</div></div>',
+      show: false
+      hide: true
+    el = tpl.createElement()
+    assert el.innerHTML == '<div>Hello World</div>'
+
+    tpl = template.create '<div cl-unless="{{flag}}">Hello World</div>',
+      flag: true
+    el = tpl.createElement()
+    assert el == null
 
   it 'ignore comment node', ->
     tpl = template.create '<div><!-- Hello --><h1>World!</h1></div>'
@@ -51,11 +75,13 @@ describe 'ClayTemplate', ->
     assert el.innerHTML == '<h1>World!</h1>'
 
   it 'call hook of template helper', ->
-    tplHelper.register 'cl-test', ()->
+    tplHelper.register 'cl-test', (val, el)->
+      assert val == true
+      assert el instanceof HTMLElement
 
     spy = sinon.spy tplHelper, 'cl-test'
 
-    tpl = template.create '<div cl-test></div>'
+    tpl = template.create '<div cl-test="{{flag}}"></div>', flag: true
 
     assert !spy.called
     tpl.createElement()

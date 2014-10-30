@@ -4,7 +4,6 @@ import helper   from './helper';
 import template from './template';
 
 import modEvent from './modules/event';
-import modHttp  from './modules/http';
 
 var REGISTRY_CLAY_PROTOTYPES = {};
 
@@ -79,7 +78,6 @@ export default {
     // defaults
     helper.mix(proto, defaults);
     helper.mix(proto.use, {
-      http  : modHttp,
       event : modEvent
     });
 
