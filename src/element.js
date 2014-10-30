@@ -286,20 +286,17 @@ var ClayElementImpl = {
    * call super element's methods
    *
    * @param {String} methodName
-   * @param {...*} passArgs
+   * @param {...*} args
    */
-  super: function() {
+  super: function(methodName, ...args) {
     if (!this.__super__) {
       throw new Error('This element does not have the `__super__`');
     }
 
-    var origArgs    = helper.toArray(arguments),
-        methodName  = origArgs.slice(0, 1),
-        passArgs    = origArgs.slice(1),
-        superMethod = this.__super__[methodName];
+    var superMethod = this.__super__[methodName];
 
     if (helper.isFunction(superMethod)) {
-      return superMethod.apply(this, passArgs);
+      return superMethod.apply(this, args);
     } else {
       throw new Error('Does not exists method in super element specified: ' + superMethod);
     }

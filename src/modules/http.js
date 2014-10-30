@@ -1,6 +1,6 @@
 'use strict';
 
-import helper from '../helper';;
+import helper from '../helper';
 
 // test sample
 function Http(ctx) {
