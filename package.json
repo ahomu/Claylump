@@ -1,6 +1,6 @@
 {
   "name": "Claylump",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Web Components wrapper with Virtual DOM",
   "main": "index.js",
   "directories": {
