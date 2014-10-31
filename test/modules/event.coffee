@@ -2,7 +2,7 @@
 
 describe 'ClayEvent', ->
 
-  event = Claylump.modules.event
+  event = Claylump.modules.load('DOMEventDelegate')
   el    = null
 
   beforeEach ->
@@ -15,13 +15,14 @@ describe 'ClayEvent', ->
     document.body.removeChild el
 
   it 'delegate event with context and method name', ->
+    console.log(event);
 
     context =
       handler : ->
         return 'foo!'
     spy = sinon.spy context, 'handler'
 
-    evt = event el,
+    evt = event root: el, events:
       'click .foo': 'handler'
 
     evt.enable context
@@ -31,9 +32,8 @@ describe 'ClayEvent', ->
 
   it 'delegate event with function literal', ->
 
-    evt = event el,
-      'click .bar': ->
-        return 'bar!'
+    evt = event root: el, events:
+      'click .bar': -> return 'bar!'
     spy = sinon.spy evt.events, 'click .bar'
 
     evt.enable()
@@ -43,7 +43,7 @@ describe 'ClayEvent', ->
 
   it 'delegate event with custom event', ->
 
-    evt = event el,
+    evt = event root: el, events:
       'custom-event .baz': ->
         return 'baz!'
     spy = sinon.spy evt.events, 'custom-event .baz'
@@ -54,7 +54,7 @@ describe 'ClayEvent', ->
     assert spy.calledOnce
 
   it 'delegate events with multiple type & handler', ->
-    evt = event el,
+    evt = event root: el, events:
       'click .foo': ->
         return 'foo!'
       'mouseover .bar': ->
@@ -78,7 +78,7 @@ describe 'ClayEvent', ->
 
   it 'delegate nested elements', ->
 
-    evt = event el,
+    evt = event root: el, events:
       'custom-event .foo': ->
         return 'foo from baz!'
     spy = sinon.spy evt.events, 'custom-event .foo'
@@ -90,7 +90,7 @@ describe 'ClayEvent', ->
 
   it 'disable delegate events', ->
 
-    evt = event el,
+    evt = event root:el, events:
       'click .foo': ->
         return 'foo!'
     spy = sinon.spy evt.events, 'click .foo'

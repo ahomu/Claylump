@@ -2,8 +2,7 @@
 
 import helper   from './helper';
 import template from './template';
-
-import modEvent from './modules/event';
+import moduleRegistry from './module';
 
 var REGISTRY_CLAY_PROTOTYPES = {};
 
@@ -78,7 +77,7 @@ export default {
     // defaults
     helper.mix(proto, defaults);
     helper.mix(proto.use, {
-      event : modEvent
+      event : 'DOMEventDelegate'
     });
 
     // dom ready required
@@ -141,13 +140,24 @@ var ClayElementImpl = {
    */
   _injectUseObject: function() {
     var self = this,
-        keys = Object.keys(this.use || {}), i = 0, alias;
+        keys = Object.keys(this.use || {}), i = 0, alias, factory;
 
     while ((alias = keys[i++])) {
       if (self[alias]) {
-        throw new Error('Conflict assign property `' + alias + '`!')
+        throw new Error('Conflict assign property `' + alias + '`!');
       }
-      self[alias] = this.use[alias](this);
+
+      if (helper.isString(this.use[alias])) {
+        factory = moduleRegistry.load([this.use[alias]]);
+      }
+      else if (helper.isFunction(this.use[alias])) {
+        factory = this.use[alias];
+      }
+      else {
+        throw new Error('Cannot detect module factory');
+      }
+
+      self[alias] = factory(this);
     }
   },
 

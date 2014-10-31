@@ -73,7 +73,7 @@ module.exports = (grunt) ->
       files: [
         'src/**/*.js'
       ]
-      tasks: ['6to5', 'browserify']
+      tasks: ['6to5', 'browserify:dist']
 
   grunt.registerTask 'build',   ['6to5', 'browserify', 'uglify']
   grunt.registerTask 'pretest', ['coffee', 'espower']

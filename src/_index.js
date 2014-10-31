@@ -7,6 +7,9 @@ import template       from './template';
 import templateHelper from './template-helper';
 import element        from './element';
 
+import moduleRegistry from './module';
+import modEvent       from './modules/event';
+
 /**
  * @class Claylump
  * @type {Object}
@@ -15,5 +18,8 @@ window.Claylump = helper.mix(ClayRegister, {
   element        : element,
   helper         : helper,
   template       : template,
-  templateHelper : templateHelper
+  templateHelper : templateHelper,
+  modules        : moduleRegistry
 });
+
+moduleRegistry.register('DOMEventDelegate', modEvent);
