@@ -4,21 +4,19 @@
     "http://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.7.3/sinon-min.js",
     "/bower_components/power-assert/build/power-assert.js"
   ],
-  "before_tests": "grunt pretest",
-  "on_exit": "rm -rf ./test/temp",
+  "before_tests": "gulp pretest",
+  "on_exit": "rm -rf ./temp",
   "src_files": [
-    "dist/claylump.polyfill.js",
     "dist/claylump.runtime.js",
     "dist/claylump.js",
-    "test/**/*.coffee"
+    "test/**/*.js"
   ],
   "serve_files": [
-    "dist/claylump.polyfill.js",
     "dist/claylump.runtime.js",
     "dist/claylump.js",
-    "test/temp/**/*.js"
+    "temp/**/*.js"
   ],
   "test_page": "test/runner.mustache",
-  "launch_in_dev": ["Chrome", "Firefox"],
+  "launch_in_dev": ["Chrome"],
   "launch_in_ci": ["Chrome"]
 }

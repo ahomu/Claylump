@@ -60,7 +60,7 @@ Claylump('x-test', {
 
 - [Matt-Esch/virtual-dom](https://github.com/Matt-Esch/virtual-dom)
 - [tautologistics/node-htmlparser](https://github.com/tautologistics/node-htmlparser)
-- [Polymer/platform](https://github.com/Polymer/platform)
+- [webcomponents/webcomponentsjs](https://github.com/WebComponents/webcomponentsjs)
 
 ## TODO
 

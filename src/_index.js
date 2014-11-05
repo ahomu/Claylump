@@ -14,7 +14,7 @@ import modEvent       from './modules/event';
  * @class Claylump
  * @type {Object}
  */
-window.Claylump = helper.mix(ClayRegister, {
+module.exports = helper.mix(ClayRegister, {
   element        : element,
   helper         : helper,
   template       : template,

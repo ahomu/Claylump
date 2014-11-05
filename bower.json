@@ -15,8 +15,6 @@
   ],
   "devDependencies": {
     "power-assert": "~0.9.0",
-    "webcomponents.js": "~0.4.2",
-    "fetch": "~0.2.1",
-    "es6-promise": "~1.0.0"
+    "webcomponents.js": "~0.5.1"
   }
 }

@@ -7,6 +7,6 @@ import helper         from './helper';
  * @class ClayRuntime
  * @type {Object}
  */
-window.ClayRuntime = {
+module.exports = {
   compiler: ClayCompiler
 };
