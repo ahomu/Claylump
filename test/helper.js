@@ -1,9 +1,9 @@
 'use strict';
-describe('ClayTemplate-Helper', function () {
+describe('ClayTemplate-Helper', ()=> {
   var helper;
   helper = Claylump.helper;
-  describe('mix', function () {
-    it('extend object', function () {
+  describe('mix', ()=> {
+    it('extend object', ()=> {
       var a, b;
       a = { foo: 'bar' };
       b = {
@@ -14,7 +14,7 @@ describe('ClayTemplate-Helper', function () {
       assert(a.foo === 'bar');
       return assert(a.baz === 'qux');
     });
-    it('extend overwrite force', function () {
+    it('extend overwrite force', ()=> {
       var a, b;
       a = { foo: 'bar' };
       b = {
@@ -26,8 +26,8 @@ describe('ClayTemplate-Helper', function () {
       assert(a.baz === 'qux');
     });
   });
-  describe('flatten', function () {
-    it('shallow flatten', function () {
+  describe('flatten', ()=> {
+    it('shallow flatten', ()=> {
       var flat;
       flat = helper.flatten([
         ['foo'],
@@ -38,7 +38,7 @@ describe('ClayTemplate-Helper', function () {
       assert(flat[1] === 'bar');
       assert(flat[2] === 'baz');
     });
-    it('not deeply flatten', function () {
+    it('not deeply flatten', ()=> {
       var flat;
       flat = helper.flatten([
         ['foo'],
@@ -55,15 +55,15 @@ describe('ClayTemplate-Helper', function () {
       assert(flat[3][0] === 'qux');
     });
   });
-  describe('clone', function () {
-    it('clone object', function () {
+  describe('clone', ()=> {
+    it('clone object', ()=> {
       var clone, orig;
       orig = { foo: 'bar' };
       clone = helper.clone(orig);
       assert(clone !== orig);
       assert(clone.foo === orig.foo);
     });
-    it('clone array', function () {
+    it('clone array', ()=> {
       var clone, orig;
       orig = [
         'foo',
@@ -75,8 +75,8 @@ describe('ClayTemplate-Helper', function () {
       assert(clone.toString() === 'foo,bar,baz');
     });
   });
-  describe('uniq', function () {
-    it('reject duplicate item and return new array', function () {
+  describe('uniq', ()=> {
+    it('reject duplicate item and return new array', ()=> {
       var orig, unique;
       orig = [
         'foo',
@@ -93,7 +93,7 @@ describe('ClayTemplate-Helper', function () {
       assert(unique[2] = 'baz');
       assert(unique[3] = 'qux');
     });
-    it('return new array', function () {
+    it('return new array', ()=> {
       var orig, unique;
       orig = [
         'foo',
@@ -105,8 +105,8 @@ describe('ClayTemplate-Helper', function () {
       assert(orig !== unique);
     });
   });
-  describe('matchSelector', function () {
-    it('match element when return true', function () {
+  describe('matchSelector', ()=> {
+    it('match element when return true', ()=> {
       var div;
       div = document.createElement('div');
       div.className = 'foo';
@@ -114,7 +114,7 @@ describe('ClayTemplate-Helper', function () {
       div.id = 'bar';
       assert(helper.matchElement(div, '#bar'));
     });
-    it('not match element when return false', function () {
+    it('not match element when return false', ()=> {
       var div;
       div = document.createElement('div');
       div.className = 'qux';
@@ -123,30 +123,30 @@ describe('ClayTemplate-Helper', function () {
       assert(!helper.matchElement(div, '#bar'));
     });
   });
-  describe('toString', function () {
-    it('from primitive data', function () {
+  describe('toString', ()=> {
+    it('from primitive data', ()=> {
       assert(helper.toString('') === 'String');
       assert(helper.toString(1) === 'Number');
       assert(helper.toString(true) === 'Boolean');
     });
-    it('from composite data', function () {
+    it('from composite data', ()=> {
       assert(helper.toString({}) === 'Object');
       assert(helper.toString([]) === 'Array');
     });
-    it('from special data', function () {
+    it('from special data', ()=> {
       assert(helper.toString(null) === 'Null');
       assert(helper.toString(void 0) === 'Undefined');
     });
-    it('from original data', function () {
+    it('from original data', ()=> {
       var clayTplInstance;
       clayTplInstance = Claylump.template.create('<div></div>', {});
       assert(helper.toString(clayTplInstance) === 'Object');
     });
   });
-  describe('toArray', function () {
-    it('from Arguments', function () {
+  describe('toArray', ()=> {
+    it('from Arguments', ()=> {
       var test;
-      test = function () {
+      test = ()=> {
         var array;
         array = helper.toArray(arguments);
         assert(helper.toString(array) === 'Array');
@@ -155,7 +155,7 @@ describe('ClayTemplate-Helper', function () {
       };
       test('foo', 'bar', 'baz');
     });
-    it('from NodeList', function () {
+    it('from NodeList', ()=> {
       var array, list;
       list = document.querySelectorAll('*');
       array = helper.toArray(list);
@@ -164,12 +164,12 @@ describe('ClayTemplate-Helper', function () {
       assert(array.length === list.length);
     });
   });
-  describe('is...', function () {
+  describe('is...', ()=> {
     it('isFunction');
     it('isString');
     it('isNumber');
     it('isArray');
-    it('isCustomElementName', function () {
+    it('isCustomElementName', ()=> {
       assert(helper.isCustomElementName('div') === false);
       assert(helper.isCustomElementName('x-foo') === true);
     });

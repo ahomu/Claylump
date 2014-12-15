@@ -1,5 +1,5 @@
 'use strict';
-describe('ClayRegister', function () {
+describe('ClayRegister', ()=> {
   var load;
   load = function (path) {
     var head, link;
@@ -10,8 +10,8 @@ describe('ClayRegister', function () {
     head.appendChild(link);
     return link;
   };
-  it('register Claylump element', function (done) {
-    return load('/test/fixture/register/basic.html').onload = function () {
+  it('register Claylump element', (done)=> {
+    return load('/test/fixture/register/basic.html').onload = ()=> {
       var testEl;
       testEl = document.createElement('x-test');
       assert(testEl.scope.foo === 'bar');
@@ -21,8 +21,8 @@ describe('ClayRegister', function () {
       done();
     };
   });
-  it('extending native elements', function (done) {
-    return load('/test/fixture/register/extends_native.html').onload = function () {
+  it('extending native elements', (done)=> {
+    return load('/test/fixture/register/extends_native.html').onload = ()=> {
       var testEl;
       testEl = document.createElement('div', 'x-extends-native');
       assert(testEl.scope.foo === 'bar');
@@ -30,9 +30,9 @@ describe('ClayRegister', function () {
       done();
     };
   });
-  it('extending custom elements', function (done) {
-    load('/test/fixture/register/basic.html').onload = function () {
-      load('/test/fixture/register/extends_custom.html').onload = function () {
+  it('extending custom elements', (done)=> {
+    load('/test/fixture/register/basic.html').onload = ()=> {
+      load('/test/fixture/register/extends_custom.html').onload = ()=> {
         var testEl;
         testEl = document.createElement('x-test-extends');
         assert(testEl.scope.foo === 'baz');

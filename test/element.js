@@ -1,5 +1,5 @@
 'use strict';
-describe('ClayElement', function () {
+describe('ClayElement', ()=> {
   var element, load;
   element = Claylump.element;
   load = function (path) {
@@ -11,14 +11,14 @@ describe('ClayElement', function () {
     head.appendChild(link);
     return link;
   };
-  describe('initiation', function () {
+  describe('initiation', ()=> {
     var plainProto;
     plainProto = element.create('x-plain', {
       foo: 'foo',
       scope: { baz: 'baz' }
     });
     document.registerElement('x-plain', { prototype: plainProto });
-    it('prototype inheritance', function () {
+    it('prototype inheritance', ()=> {
       var extendedProto;
       extendedProto = element.create('x-extend', {
         'extends': 'x-plain',
@@ -30,7 +30,7 @@ describe('ClayElement', function () {
       assert(extendedProto.scope.baz === 'baz');
       assert(extendedProto.scope.qux === 'qux');
     });
-    it('prototype inheritance does not effect base element property', function () {
+    it('prototype inheritance does not effect base element property', ()=> {
       var extendedProto;
       extendedProto = element.create('x-extend', {
         'extends': 'x-plain',
@@ -42,16 +42,16 @@ describe('ClayElement', function () {
       assert(extendedProto.foo === 'bar');
       assert(extendedProto.scope.baz === 'qux');
     });
-    it('traversal <template> & parse html', function (done) {
-      return load('/test/fixture/element/template_test.html').onload = function () {
+    it('traversal <template> & parse html', (done)=> {
+      load('/test/fixture/element/template_test.html').onload = ()=> {
         var el;
         el = Object.create(document.createElement('x-template-test').constructor);
         assert(el.prototype._html === '<h1>Hello World</h1>');
         done();
       };
     });
-    it('attached set `root` & `template`', function (done) {
-      return load('/test/fixture/element/template_test.html').onload = function () {
+    it('attached set `root` & `template`', (done)=> {
+      load('/test/fixture/element/template_test.html').onload = ()=> {
         var el;
         el = document.createElement('x-template-test');
         document.body.appendChild(el);
@@ -65,19 +65,19 @@ describe('ClayElement', function () {
     });
     it('`use` & `events` properties are can inheritance & override');
   });
-  describe('lifecycle callbacks', function () {
+  describe('lifecycle callbacks', ()=> {
     var hostObj, spy;
     hostObj = null;
     spy = null;
-    beforeEach(function () {
+    beforeEach(()=> {
       hostObj = {
-        callback: function () {
+        callback: function() {
           return this.i++;
         }
       };
       spy = sinon.spy(hostObj, 'callback');
     });
-    it('created', function () {
+    it('created', ()=> {
       var el, proto;
       proto = element.create('x-created', {
         i: 0,
@@ -89,7 +89,7 @@ describe('ClayElement', function () {
       assert(spy.calledOnce);
       assert(el.i === 1);
     });
-    it('attached', function () {
+    it('attached', ()=> {
       var el, proto;
       proto = element.create('x-attached', {
         i: 0,
@@ -103,7 +103,7 @@ describe('ClayElement', function () {
       assert(el.i === 1);
       document.body.removeChild(el);
     });
-    it('detached', function () {
+    it('detached', ()=> {
       var el, proto;
       proto = element.create('x-detached', {
         i: 0,
@@ -117,7 +117,7 @@ describe('ClayElement', function () {
       assert(spy.calledOnce);
       assert(el.i === 1);
     });
-    it('attrChanged', function () {
+    it('attrChanged', ()=> {
       var el, proto;
       proto = element.create('x-attr-changed-test', {
         i: 0,
@@ -131,13 +131,13 @@ describe('ClayElement', function () {
       assert(el.i === 1);
     });
   });
-  describe('inject module', function () {
+  describe('inject module', ()=> {
     document.registerElement('x-inject-test', {
       prototype: element.create('x-inject-test', {
         use: {
           test: function (ctx) {
             return {
-              method: function () {
+              method: ()=> {
                 return ctx;
               }
             };
@@ -145,14 +145,14 @@ describe('ClayElement', function () {
         }
       })
     });
-    it('module assign specified alias', function () {
+    it('module assign specified alias', ()=> {
       var el;
       el = document.createElement('x-inject-test');
       assert(el.test !== null);
       assert(el.test.method() === el);
     });
   });
-  describe('call base element super method', function () {
+  describe('call base element super method', ()=> {
     document.registerElement('x-super-test', {
       prototype: element.create('x-super-test', {
         prop: 'super',
@@ -170,13 +170,13 @@ describe('ClayElement', function () {
         }
       })
     });
-    it('call correctly', function () {
+    it('call correctly', ()=> {
       var el;
       el = document.createElement('x-sub-test');
       assert(el.test('!') === 'this is sub!');
       assert(el['super']('test', '!') === 'this is super!');
     });
-    it('can not call from inheritance root (does not have the super)', function () {
+    it('can not call from inheritance root (does not have the super)', ()=> {
       var el;
       el = document.createElement('x-super-test');
       try {
@@ -185,7 +185,7 @@ describe('ClayElement', function () {
         assert(true);
       }
     });
-    it('can not specify a property that is not a function.', function () {
+    it('can not specify a property that is not a function.', ()=> {
       var el;
       el = document.createElement('x-super-test');
       try {
@@ -195,9 +195,9 @@ describe('ClayElement', function () {
       }
     });
   });
-  describe('element traversal helper', function () {
-    it('`find` one return element', function (done) {
-      load('/test/fixture/element/traversal_test.html').onload = function () {
+  describe('element traversal helper', ()=> {
+    it('`find` one return element', (done)=> {
+      load('/test/fixture/element/traversal_test.html').onload = ()=> {
         var el, found;
         el = document.createElement('x-traversal-test');
         document.body.appendChild(el);
@@ -207,8 +207,8 @@ describe('ClayElement', function () {
         done();
       };
     });
-    it('`find` some return array', function (done) {
-      load('/test/fixture/element/traversal_test.html').onload = function () {
+    it('`find` some return array', (done)=> {
+      load('/test/fixture/element/traversal_test.html').onload = ()=> {
         var el, found;
         el = document.createElement('x-traversal-test');
         document.body.appendChild(el);
@@ -218,8 +218,8 @@ describe('ClayElement', function () {
         done();
       };
     });
-    it('`closestOf` traverse parent', function (done) {
-      load('/test/fixture/element/traversal_test.html').onload = function () {
+    it('`closestOf` traverse parent', (done)=> {
+      load('/test/fixture/element/traversal_test.html').onload = ()=> {
         var el, found;
         el = document.createElement('x-traversal-test');
         document.body.appendChild(el);
@@ -239,8 +239,8 @@ describe('ClayElement', function () {
         done();
       };
     });
-    it('`closestOf` traverse fail', function (done) {
-      load('/test/fixture/element/traversal_test.html').onload = function () {
+    it('`closestOf` traverse fail', (done)=> {
+      load('/test/fixture/element/traversal_test.html').onload = ()=> {
         var el, found;
         el = document.createElement('x-traversal-test');
         document.body.appendChild(el);

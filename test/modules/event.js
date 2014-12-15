@@ -1,22 +1,22 @@
 'use strict';
-describe('ClayEvent', function () {
+describe('ClayEvent', ()=> {
   var el, event;
   event = Claylump.modules.load('DOMEventDelegate');
   el = null;
-  beforeEach(function () {
+  beforeEach(()=> {
     el = document.createElement('div');
     el.style.display = 'none';
     el.innerHTML = '<span class="foo">foo<span class="bar">bar<span class="baz">baz</span></span></span>';
     document.body.appendChild(el);
   });
-  afterEach(function () {
+  afterEach(()=> {
     document.body.removeChild(el);
   });
-  it('delegate event with context and method name', function () {
+  it('delegate event with context and method name', ()=> {
     var context, evt, spy;
     console.log(event);
     context = {
-      handler: function () {
+      handler: ()=> {
         return 'foo!';
       }
     };
@@ -30,12 +30,12 @@ describe('ClayEvent', function () {
     evt.emit(el.querySelector('.foo'), 'click');
     assert(spy.calledOnce);
   });
-  it('delegate event with function literal', function () {
+  it('delegate event with function literal', ()=> {
     var evt, spy;
     evt = event({
       root: el,
       events: {
-        'click .bar': function () {
+        'click .bar': ()=> {
           return 'bar!';
         }
       }
@@ -46,12 +46,12 @@ describe('ClayEvent', function () {
     evt.emit(el.querySelector('.bar'), 'click');
     assert(spy.calledOnce);
   });
-  it('delegate event with custom event', function () {
+  it('delegate event with custom event', ()=> {
     var evt, spy;
     evt = event({
       root: el,
       events: {
-        'custom-event .baz': function () {
+        'custom-event .baz': ()=> {
           return 'baz!';
         }
       }
@@ -62,18 +62,18 @@ describe('ClayEvent', function () {
     evt.emit(el.querySelector('.baz'), 'custom-event');
     assert(spy.calledOnce);
   });
-  it('delegate events with multiple type & handler', function () {
+  it('delegate events with multiple type & handler', ()=> {
     var evt, spy1, spy2, spy3;
     evt = event({
       root: el,
       events: {
-        'click .foo': function () {
+        'click .foo': ()=> {
           return 'foo!';
         },
-        'mouseover .bar': function () {
+        'mouseover .bar': ()=> {
           return 'bar!';
         },
-        'custom-event .baz': function () {
+        'custom-event .baz': ()=> {
           return 'baz!';
         }
       }
@@ -92,12 +92,12 @@ describe('ClayEvent', function () {
     evt.emit(el.querySelector('.baz'), 'custom-event');
     assert(spy3.calledOnce);
   });
-  it('delegate nested elements', function () {
+  it('delegate nested elements', ()=> {
     var evt, spy;
     evt = event({
       root: el,
       events: {
-        'custom-event .foo': function () {
+        'custom-event .foo': ()=> {
           return 'foo from baz!';
         }
       }
@@ -108,12 +108,12 @@ describe('ClayEvent', function () {
     evt.emit(el.querySelector('.baz'), 'custom-event');
     assert(spy.calledOnce);
   });
-  it('disable delegate events', function () {
+  it('disable delegate events', ()=> {
     var evt, spy;
     evt = event({
       root: el,
       events: {
-        'click .foo': function () {
+        'click .foo': ()=> {
           return 'foo!';
         }
       }

@@ -1,20 +1,19 @@
 {
   "framework": [
-    "/node_modules/mocha/mocha.js",
-    "http://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.7.3/sinon-min.js",
-    "/bower_components/power-assert/build/power-assert.js"
+    "/node_modules/mocha/mocha.js"
   ],
   "before_tests": "gulp pretest",
   "on_exit": "rm -rf ./temp",
   "src_files": [
-    "dist/claylump.runtime.js",
-    "dist/claylump.js",
+    "src/**/*.js",
     "test/**/*.js"
   ],
   "serve_files": [
-    "dist/claylump.runtime.js",
-    "dist/claylump.js",
+    "dist/*.js",
     "temp/**/*.js"
+  ],
+  "serve_files_ignore": [
+    "dist/*.min.js"
   ],
   "test_page": "test/runner.mustache",
   "launch_in_dev": ["Chrome"],
